@@ -1,10 +1,15 @@
 
 package com.github.hcsp.sql;
+
 import java.io.File;
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Sql {
@@ -82,14 +87,17 @@ public class Sql {
 // | 2   |
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-        return 0;
+        String sql = "select count(distinct USER_ID) from \"ORDER\" where GOODS_ID  = ?";
+        Object[] params = new Object[]{goodsId};
+        ResultSet rs = executeQuery(databaseConnection, sql, params);
+        return rs.next() ? rs.getInt(1) : 0;
     }
 
     /**
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum 第几页，从1开始
+     * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
      */
@@ -99,8 +107,16 @@ public class Sql {
 // +----+----------+------+----------+
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
-    public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        return null;
+    public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws Exception {
+
+        String sql = "select id, name, tel, address\n" +
+                "from USER\n" +
+                "order by ID desc\n" +
+                "limit ? offset ?";
+        Object[] params = new Object[]{pageSize, (pageNum - 1) * pageSize};
+
+        return executeQueryAndGetList(databaseConnection, sql, params, new User());
+
     }
 
     // 商品及其营收
@@ -131,8 +147,15 @@ public class Sql {
 //  +----+--------+------+
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
-    public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        return null;
+    public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws Exception {
+
+        String sql = "select GOODS_ID as goodsId, max(NAME) as goodsName, sum(GOODS_PRICE * GOODS_NUM) as gmv\n" +
+                "from \"ORDER\"\n" +
+                "         join GOODS\n" +
+                "              on \"ORDER\".GOODS_ID = GOODS.ID\n" +
+                "group by GOODS_ID\n" +
+                "order by GMV desc";
+        return executeQueryAndGetList(databaseConnection, sql, null, new GoodsAndGmv());
     }
 
 
@@ -169,8 +192,12 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
-    public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        return null;
+    public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws Exception {
+        String sql = "select \"ORDER\".id as orderId, user.NAME as userName, GOODS.NAME as goodsName, GOODS_NUM * GOODS_PRICE as totalPrice\n" +
+                "from \"ORDER\"\n" +
+                "         join USER on \"ORDER\".USER_ID = USER.ID\n" +
+                "         join GOODS on \"ORDER\".GOODS_ID = GOODS.ID";
+        return executeQueryAndGetList(databaseConnection, sql, null, new Order());
     }
 
     /**
@@ -197,12 +224,16 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
-    public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        return null;
+    public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws Exception {
+        String sql = "select \"ORDER\".id as orderId, user.NAME as userName, GOODS.NAME as goodsName, GOODS_NUM * GOODS_PRICE as totalPrice\n" +
+                "from \"ORDER\"\n" +
+                "         left join USER on \"ORDER\".USER_ID = USER.ID\n" +
+                "         left join GOODS on \"ORDER\".GOODS_ID = GOODS.ID";
+        return executeQueryAndGetList(databaseConnection, sql, null, new Order());
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) throws Exception {
         File projectDir = new File(System.getProperty("basedir", System.getProperty("user.dir")));
         String jdbcUrl = "jdbc:h2:file:" + new File(projectDir, "target/test").getAbsolutePath();
         try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "Jxi1Oxc92qSj")) {
@@ -214,4 +245,52 @@ public class Sql {
         }
     }
 
+    private static <T> List<T> executeQueryAndGetList(Connection databaseConnection, String sql, Object[] params, T t) throws Exception {
+        ResultSet rs = executeQuery(databaseConnection, sql, params);
+        return convertResultSetToList(rs, t);
+    }
+
+    private static ResultSet executeQuery(Connection databaseConnection, String sql, Object[] params) throws SQLException {
+        PreparedStatement statement = databaseConnection.prepareStatement(sql);
+
+        if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+                statement.setObject(i + 1, params[i]);
+            }
+        }
+
+        return statement.executeQuery();
+    }
+
+    private static <T> List<T> convertResultSetToList(ResultSet rs, T t) throws Exception {
+        List<T> list = new ArrayList<>();
+        Class<T> c = (Class<T>) t.getClass();
+        Field[] fs = c.getDeclaredFields();
+
+        if (rs != null) {
+            while (rs.next()) {
+                t = c.getDeclaredConstructor().newInstance();
+                for (Field field : fs) {
+                    Field f = t.getClass().getDeclaredField(field.getName());
+                    f.setAccessible(true);
+                    String typeName = f.getType().getName();
+                    String filedName = field.getName();
+
+                    if (typeName.equals(String.class.getName())) {
+                        f.set(t, rs.getString(filedName));
+                    } else if (typeName.equals(Integer.class.getName())
+                            || typeName.equals(int.class.getName())) {
+                        f.set(t, rs.getInt(filedName));
+                    } else if (typeName.equals(BigDecimal.class.getName())) {
+                        f.set(t, rs.getBigDecimal(filedName));
+                    } else {
+                        //to do 匹配别的类型
+                    }
+                }
+                list.add(t);
+            }
+        }
+        return list;
+    }
 }
+
