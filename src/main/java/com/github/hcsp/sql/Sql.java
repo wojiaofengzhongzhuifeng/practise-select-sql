@@ -7,13 +7,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Sql {
 // 用户表：
@@ -166,7 +162,6 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        List<GoodsAndGmv> list;
         String sqlCommend = "select goods.id,goods.name,sum(`order`.goods_num*goods_price) as gmv from `order` \n" +
                 "join goods\n" +
                 "on goods.id = `order`.goods_id\n" +
