@@ -210,17 +210,11 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
-    public static List<Order> getInnerJoinOrders(Connection databaseConnection) {
+    public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         String str = "select \"ORDER\".ID as goodsId, USER.NAME as userName,GOODS.NAME as goodsName,GOODS_PRICE*GOODS_NUM as total from \"ORDER\"\n" +
                 "         join USER on \"ORDER\".USER_ID = USER.ID\n" +
                 "         join GOODS on   \"ORDER\".GOODS_ID = GOODS.ID";
-        List<Order> list = new ArrayList<>();
-        try (PreparedStatement statement = databaseConnection.prepareStatement(str)) {
-            GetArrayList(list, statement);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return list;
+       return GetArrayList(databaseConnection,str);
     }
 
     /**
@@ -251,23 +245,23 @@ public class Sql {
         String str = "select \"ORDER\".ID as goodsId, USER.NAME as userName,GOODS.NAME as goodsName,GOODS_PRICE*GOODS_NUM as total from \"ORDER\"\n" +
                 "        left join USER on \"ORDER\".USER_ID = USER.ID\n" +
                 "        left join GOODS on \"ORDER\".GOODS_ID = GOODS.ID";
-        List<Order> list = new ArrayList<>();
-        try (PreparedStatement statement = databaseConnection.prepareStatement(str)) {
-            GetArrayList((List<Order>) list, statement);
-        }
-        return list;
+        return GetArrayList(databaseConnection, str);
     }
 
-    private static void GetArrayList(List<Order> list, PreparedStatement statement) throws SQLException {
-        ResultSet resultSet = statement.executeQuery();
-        while (resultSet.next()) {
-            Order order = new Order();
-            order.id = resultSet.getInt(1);
-            order.userName = resultSet.getString(2);
-            order.goodsName = resultSet.getString(3);
-            order.totalPrice = resultSet.getBigDecimal(4);
-            list.add(order);
+    private static List<Order> GetArrayList(Connection connection, String str) throws SQLException {
+        List<Order> list = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(str)) {
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Order order = new Order();
+                order.id = resultSet.getInt(1);
+                order.userName = resultSet.getString(2);
+                order.goodsName = resultSet.getString(3);
+                order.totalPrice = resultSet.getBigDecimal(4);
+                list.add(order);
+            }
         }
+        return list;
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
