@@ -210,11 +210,10 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select \"ORDER\".ID, USER.NAME, GOODS.NAME, sum(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE) as total_price from \"ORDER\" inner join GOODS on \"ORDER\".GOODS_ID\n" +
-                "= GOODS.ID inner join USER on \"ORDER\".USER_ID = USER.ID group by \"ORDER\".ID")) {
-            return getOrders(preparedStatement);
-        }
+        return getOrders(databaseConnection, "select \"ORDER\".ID, USER.NAME, GOODS.NAME, sum(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE) as total_price from \"ORDER\" inner join GOODS on \"ORDER\".GOODS_ID\n" +
+                "= GOODS.ID inner join USER on \"ORDER\".USER_ID = USER.ID group by \"ORDER\".ID");
     }
+
 
     /**
      * 题目5：
@@ -241,26 +240,26 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select \"ORDER\".id, USER.NAME, GOODS.NAME, sum(GOODS_PRICE * GOODS_NUM) as TOTAL_PRICE from \"ORDER\"\n" +
+        return getOrders(databaseConnection, "select \"ORDER\".id, USER.NAME, GOODS.NAME, sum(GOODS_PRICE * GOODS_NUM) as TOTAL_PRICE from \"ORDER\"\n" +
                 "  left join USER on USER_ID = USER.ID\n" +
                 "  left join \"GOODS\" on GOODS_ID = GOODS.ID\n" +
-                "GROUP BY  \"ORDER\".ID")) {
-            return getOrders(preparedStatement);
-        }
+                "GROUP BY  \"ORDER\".ID");
     }
 
-    private static List<Order> getOrders(PreparedStatement preparedStatement) throws SQLException {
-        List<Order> lists = new ArrayList<>();
-        ResultSet resultSet = preparedStatement.executeQuery();
-        while (resultSet.next()) {
-            Order order = new Order();
-            order.id = resultSet.getInt(1);
-            order.userName = resultSet.getString(2);
-            order.goodsName = resultSet.getString(3);
-            order.totalPrice = resultSet.getBigDecimal(4);
-            lists.add(order);
+    private static List<Order> getOrders(Connection databaseConnection, String sql) throws SQLException {
+        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql)) {
+            List<Order> lists = new ArrayList<>();
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Order order = new Order();
+                order.id = resultSet.getInt(1);
+                order.userName = resultSet.getString(2);
+                order.goodsName = resultSet.getString(3);
+                order.totalPrice = resultSet.getBigDecimal(4);
+                lists.add(order);
+            }
+            return lists;
         }
-        return lists;
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
@@ -271,7 +270,7 @@ public class Sql {
             // System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
             // System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
             // System.out.println(getGoodsAndGmv(connection));
-            // System.out.println(getInnerJoinOrders(connection));
+            System.out.println(getInnerJoinOrders(connection));
             System.out.println(getLeftJoinOrders(connection));
         }
     }
