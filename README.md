@@ -14,6 +14,6 @@
 -----
 
 
-完成题目有困难？不妨来看看[写代码啦的相应课程](https://xiedaimala.com/tasks/661cd7ab-7fea-47d0-8e11-555d6fca751d)吧！
+完成题目有困难？不妨来看看[写代码啦的相应课程](https://xiedaimala.com/tasks/b3e0c817-65fc-4260-b745-832faabc822d)吧！
 
-回到[写代码啦的题目](https://xiedaimala.com/tasks/661cd7ab-7fea-47d0-8e11-555d6fca751d/quizzes/6c87ef57-7f06-4af2-9112-86dd27ff099d)，继续挑战！ 
+回到[写代码啦的题目](https://xiedaimala.com/tasks/b3e0c817-65fc-4260-b745-832faabc822d/quizzes/6774d08f-1767-4e7f-868b-4087e033dddd)，继续挑战！ 
