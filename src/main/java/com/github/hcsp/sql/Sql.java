@@ -217,23 +217,12 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        List<Order> list = new ArrayList<>();
         String sql = "select * from\n" +
                 "    (select a.ID, b.NAME as user_name, c.NAME as goods_name, a.GOODS_NUM*a.GOODS_PRICE as total_price from \"ORDER\" a\n" +
                 "    left join USER b on a.USER_ID = b.ID\n" +
                 "    left join GOODS c on a.GOODS_ID = c.ID)\n" +
                 "where user_name <> '' and goods_name <> ''";
-        PreparedStatement ps = databaseConnection.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Order order = new Order();
-            order.id = rs.getInt(1);
-            order.userName = rs.getString(2);
-            order.goodsName = rs.getString(3);
-            order.totalPrice = rs.getBigDecimal(4);
-            list.add(order);
-        }
-        return list;
+        return getOrders(databaseConnection, sql);
     }
 
     /**
@@ -264,22 +253,11 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-           List<Order> list = new ArrayList<>();
         String sql = "select * from\n" +
                 "    (select a.ID, b.NAME as user_name, c.NAME as goods_name, a.GOODS_NUM*a.GOODS_PRICE as total_price from \"ORDER\" a\n" +
                 "    left join USER b on a.USER_ID = b.ID\n" +
                 "    left join GOODS c on a.GOODS_ID = c.ID)";
-        PreparedStatement ps = databaseConnection.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            Order order = new Order();
-            order.id = rs.getInt(1);
-            order.userName = rs.getString(2);
-            order.goodsName = rs.getString(3);
-            order.totalPrice = rs.getBigDecimal(4);
-            list.add(order);
-        }
-        return list;
+        return getOrders(databaseConnection, sql);
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
@@ -295,4 +273,25 @@ public class Sql {
         }
     }
 
+    /**
+     *
+     * @param databaseConnection 数据库连接
+     * @param sql sql语句
+     * @return 返回list
+     * @throws SQLException 抛出sqlexception
+     */
+    public static List<Order> getOrders(Connection databaseConnection, String sql) throws SQLException {
+        List<Order> list = new ArrayList<>();
+        PreparedStatement ps = databaseConnection.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            Order order = new Order();
+            order.id = rs.getInt(1);
+            order.userName = rs.getString(2);
+            order.goodsName = rs.getString(3);
+            order.totalPrice = rs.getBigDecimal(4);
+            list.add(order);
+        }
+        return list;
+    }
 }
