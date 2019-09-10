@@ -51,55 +51,49 @@
             </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <version>5.2.4</version>
-                <executions>
-                    <execution>
-                        <id>test-database-setup</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>migrate</goal>
-                        </goals>
-                        <configuration>
-                            <url>jdbc:h2:file:${project.basedir}/target/test</url>
-                            <user>root</user>
-                            <password>Jxi1Oxc92qSj</password>
-                        </configuration>
-                    </execution>
-                </executions>
+<artifactId>flyway-maven-plugin</artifactId>
+<version>5.2.4</version>
+<executions>
+    <execution>
+        <id>test-database-setup</id>
+        <phase>initialize</phase>
+        <goals>
+            <goal>migrate</goal>
+        </goals>
+        <configuration>
+            <url>jdbc:h2:file:${project.basedir}/target/test</url>
+            <user>root</user>
+            <password>Jxi1Oxc92qSj</password>
+        </configuration>
+    </execution>
+</executions>
 
             </plugin>
-            <plugin>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <configLocation>${basedir}/.circleci/checkstyle.xml</configLocation>
-                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                    <enableRulesSummary>false</enableRulesSummary>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>8.22</version>
-                    </dependency>
-                    <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-checkstyle-plugin -->
-                    <dependency>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-checkstyle-plugin</artifactId>
-                        <version>3.1.0</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
+                <plugin>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <configuration>
+                        <configLocation>${basedir}/.circleci/checkstyle.xml</configLocation>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <enableRulesSummary>false</enableRulesSummary>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>compile</id>
+                            <phase>compile</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>8.22</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
         </plugins>
     </build>
 </project>
