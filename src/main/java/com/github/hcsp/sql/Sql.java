@@ -87,7 +87,7 @@ public class Sql {
 // | 2   |
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select count(distinct USER_ID) from `ORDER` where GOODS_ID = ?")) {
+        try (PreparedStatement statement = databaseConnection.prepareStatement("select count(distinct USER_ID) as count from \"ORDER\" where GOODS_ID = ?")) {
             statement.setInt(1, goodsId);
             ResultSet resultSet = statement.executeQuery();
 
@@ -214,7 +214,7 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        return getOrders(databaseConnection, "select \"ORDER\".id,\n" +
+        return getOrders(databaseConnection, "select \"ORDER\".id                              as order_id,\n" +
                 "       USER.NAME                               as user_name,\n" +
                 "       GOODS.NAME                              as goods_name,\n" +
                 "       \"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE as total_price\n" +
@@ -223,7 +223,7 @@ public class Sql {
                 "         join GOODS\n" +
                 "              on \"ORDER\".GOODS_ID = GOODS.ID\n" +
                 "         JOIN USER\n" +
-                "              ON \"ORDER\".USER_ID = USER.ID");
+                "              ON \"ORDER\".USER_ID = USER.ID;");
     }
 
     /**
@@ -260,14 +260,12 @@ public class Sql {
                 "         left join GOODS\n" +
                 "                   on \"ORDER\".GOODS_ID = GOODS.ID\n" +
                 "         left JOIN USER\n" +
-                "                   ON \"ORDER\".USER_ID = USER.ID");
-
+                "                   ON \"ORDER\".USER_ID = USER.ID;");
     }
 
     private static List<Order> getOrders(Connection databaseConnection, String sql) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement(sql)) {
-            ResultSet resultSet = statement.executeQuery();
-
+        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement(sql)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
             List<Order> orders = new ArrayList<>();
             while (resultSet.next()) {
                 Order order = new Order();
@@ -294,6 +292,5 @@ public class Sql {
             System.out.println(getLeftJoinOrders(connection));
         }
     }
-
 
 }
