@@ -3,7 +3,11 @@ package com.github.hcsp.sql;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +76,11 @@ public class Sql {
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
      *
-     * @param goodsId 指定的商品ID
+     * @param databaseConnection jdbc连接
+     * @param goodsId            指定的商品ID
      * @return 有多少用户买过这个商品
+     * @throws SQLException if a database access error occurs
+     *                      or this method is called on a closed connection
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
 // +-----+
@@ -98,9 +105,12 @@ public class Sql {
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum  第几页，从1开始
-     * @param pageSize 每页有多少个元素
+     * @param databaseConnection jdbc连接
+     * @param pageNum            第几页，从1开始
+     * @param pageSize           每页有多少个元素
      * @return 指定页中的用户
+     * @throws SQLException if a database access error occurs
+     *                      or this method is called on a closed connection
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
 // +----+----------+------+----------+
@@ -109,7 +119,24 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        return null;
+        try (PreparedStatement pstmt = databaseConnection.prepareStatement("select ID, NAME, TEL, ADDRESS\n" +
+                "from USER\n" +
+                "order by ID desc\n" +
+                "limit ? * (? - 1), 3")) {
+            pstmt.setInt(1, pageSize);
+            pstmt.setInt(2, pageNum);
+            ResultSet resultSet = pstmt.executeQuery();
+            List<User> users = new ArrayList<>();
+            while (resultSet.next()) {
+                User user = new User();
+                user.id = resultSet.getInt(1);
+                user.name = resultSet.getString("name");
+                user.tel = resultSet.getString(3);
+                user.address = resultSet.getString("ADDRESS");
+                users.add(user);
+            }
+            return users;
+        }
     }
 
     // 商品及其营收
@@ -124,9 +151,14 @@ public class Sql {
         }
     }
 
-    /**
+    /***
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     *
+     * @param databaseConnection jdbc连接
+     * @return 所有商品及其GMV
+     * @throws SQLException if a database access error occurs
+     *                      or this method is called on a closed connection
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -141,7 +173,22 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        return null;
+        try (PreparedStatement pstmt = databaseConnection.prepareStatement("select GOODS.ID, GOODS.NAME, SUM(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE)as GMV\n" +
+                "from \"ORDER\"\n" +
+                "         join GOODS on \"ORDER\".GOODS_ID = GOODS.ID\n" +
+                "group by GOODS.ID\n" +
+                "order by GMV desc")) {
+            ResultSet resultSet = pstmt.executeQuery();
+            List<GoodsAndGmv> goodsAndGmvs = new ArrayList<>();
+            while (resultSet.next()) {
+                GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
+                goodsAndGmv.goodsId = resultSet.getInt(1);
+                goodsAndGmv.goodsName = resultSet.getString(2);
+                goodsAndGmv.gmv = resultSet.getBigDecimal(3);
+                goodsAndGmvs.add(goodsAndGmv);
+            }
+            return goodsAndGmvs;
+        }
     }
 
 
@@ -170,7 +217,7 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 2        | lisi      | goods1     | 10          |
 // +----------+-----------+------------+-------------+
-// | 3        | wangwu    | goods1     | 20          |
+// | 3        | lisi    | goods1     | 20          |
 // +----------+-----------+------------+-------------+
 // | 4        | zhangsan  | goods2     | 80          |
 // +----------+-----------+------------+-------------+
@@ -178,13 +225,53 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
+
+    /**
+     * @param pstmt An object that represents a precompiled SQL statement.
+     * @return 符合条件的订单列表
+     * @throws SQLException if a database access error occurs
+     *                      or this method is called on a closed connection
+     */
+    private static List<Order> getOrders(PreparedStatement pstmt) throws SQLException {
+        ResultSet resultSet = pstmt.executeQuery();
+        List<Order> orders = new ArrayList<>();
+        while (resultSet.next()) {
+            Order order = new Order();
+            order.id = resultSet.getInt(1);
+            order.userName = resultSet.getString(2);
+            order.goodsName = resultSet.getString(3);
+            order.totalPrice = resultSet.getBigDecimal(4);
+            orders.add(order);
+        }
+        return orders;
+    }
+
+    /**
+     * @param databaseConnection jdbc连接
+     * @return 符合条件的订单列表
+     * @throws SQLException if a database access error occurs
+     *                      or this method is called on a closed connection
+     */
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        return null;
+        try (PreparedStatement pstmt = databaseConnection.prepareStatement("select \"ORDER\".ID                              as ORDER_ID,\n" +
+                "       USER.NAME                               as USER_NAME,\n" +
+                "       GOODS.NAME                              as GOODS_NAME,\n" +
+                "       \"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE as TOTAL_PRICE\n" +
+                "from \"ORDER\"\n" +
+                "         join USER on \"ORDER\".USER_ID = USER.id\n" +
+                "         join GOODS on \"ORDER\".GOODS_ID = GOODS.ID")) {
+            return getOrders(pstmt);
+        }
     }
 
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     *
+     * @param databaseConnection jdbc连接
+     * @return 符合条件的订单列表
+     * @throws SQLException if a database access error occurs
+     *                      or this method is called on a closed connection
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -207,7 +294,7 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        try(PreparedStatement pstmt = databaseConnection.prepareStatement("select \"ORDER\".ID,\n" +
+        try (PreparedStatement pstmt = databaseConnection.prepareStatement("select \"ORDER\".ID,\n" +
                 "       USER.NAME                               as USER_NAME,\n" +
                 "       GOODS.NAME                              as GOODS_NAME,\n" +
                 "       \"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE as TOTAL_PRICE\n" +
@@ -216,17 +303,7 @@ public class Sql {
                 "                   on \"ORDER\".USER_ID = USER.ID\n" +
                 "         left join GOODS\n" +
                 "                   on \"ORDER\".GOODS_ID = GOODS.ID")) {
-            ResultSet resultSet = pstmt.executeQuery();
-            List<Order> orders = new ArrayList<>();
-            while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt(1);
-                order.userName = resultSet.getString(2);
-                order.goodsName = resultSet.getString(3);
-                order.totalPrice = resultSet.getBigDecimal(4);
-                orders.add(order);
-            }
-            return orders;
+            return getOrders(pstmt);
         }
     }
 
@@ -236,9 +313,9 @@ public class Sql {
         String jdbcUrl = "jdbc:h2:file:" + new File(projectDir, "target/test").getAbsolutePath();
         try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "Jxi1Oxc92qSj")) {
             System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
-//            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
-//            System.out.println(getGoodsAndGmv(connection));
-//            System.out.println(getInnerJoinOrders(connection));
+            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
+            System.out.println(getGoodsAndGmv(connection));
+            System.out.println(getInnerJoinOrders(connection));
             System.out.println(getLeftJoinOrders(connection));
         }
     }
