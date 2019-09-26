@@ -1,8 +1,13 @@
 
 package com.github.hcsp.sql;
+
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,7 +102,7 @@ public class Sql {
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum 第几页，从1开始
+     * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
      */
@@ -109,7 +114,7 @@ public class Sql {
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
         try (PreparedStatement Statement = databaseConnection.prepareStatement("select * from `user` order by ID desc limit ? OFFSET ? ")) {
-            Statement.setInt(1, pageSize * (pageNum - 1) );
+            Statement.setInt(1, pageSize * (pageNum - 1));
             Statement.setInt(2, pageSize);
             ResultSet resultSet = Statement.executeQuery();
             ArrayList<User> list = new ArrayList<>();
@@ -154,25 +159,22 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        try{
-            PreparedStatement statement=databaseConnection.prepareStatement("select GOODS.ID,GOODS.NAME ,SUM(\"ORDER\".GOODS_NUM*\"ORDER\".GOODS_PRICE)AS GMV from \"ORDER\"\n" +
-                    "join GOODS\n" +
-                    "on \"ORDER\".GOODS_ID=GOODS.ID\n" +
-                    "GROUP BY GOODS_ID\n" +
-                    "ORDER BY GMV DESC");
+        try (PreparedStatement statement = databaseConnection.prepareStatement("select GOODS.ID,GOODS.NAME ,SUM(\"ORDER\".GOODS_NUM*\"ORDER\".GOODS_PRICE)AS GMV from \"ORDER\"\n" +
+                "join GOODS\n" +
+                "on \"ORDER\".GOODS_ID=GOODS.ID\n" +
+                "GROUP BY GOODS_ID\n" +
+                "ORDER BY GMV DESC")) {
             ResultSet resultSet = statement.executeQuery();
-            List<GoodsAndGmv> list=new ArrayList<>();
-            while (resultSet.next()){
-                GoodsAndGmv goodsAndGmv=new GoodsAndGmv();
-                goodsAndGmv.goodsId=resultSet.getInt(1);
-                goodsAndGmv.goodsName=resultSet.getNString(2);
-                goodsAndGmv.gmv=resultSet.getBigDecimal(3);
+            List<GoodsAndGmv> list = new ArrayList<>();
+            while (resultSet.next()) {
+                GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
+                goodsAndGmv.goodsId = resultSet.getInt(1);
+                goodsAndGmv.goodsName = resultSet.getNString(2);
+                goodsAndGmv.gmv = resultSet.getBigDecimal(3);
                 list.add(goodsAndGmv);
             }
 
             return list;
-    }finally {
-
         }
     }
 
@@ -211,7 +213,7 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        try(PreparedStatement statement = databaseConnection.prepareStatement("select \"ORDER\".ID as ORDER_ID, USER.Name as USER_NAME, GOODS.NAME as GOODS_NAME, \"ORDER\".GOODS_PRICE*GOODS_NUM as TOTAL_PRICE\n" +
+        try (PreparedStatement statement = databaseConnection.prepareStatement("select \"ORDER\".ID as ORDER_ID, USER.Name as USER_NAME, GOODS.NAME as GOODS_NAME, \"ORDER\".GOODS_PRICE*GOODS_NUM as TOTAL_PRICE\n" +
                 "from \"ORDER\"\n" +
                 "inner join USER\n" +
                 "on USER.ID = \"ORDER\".USER_ID\n" +
@@ -219,7 +221,7 @@ public class Sql {
                 "on GOODS.ID = \"ORDER\".GOODS_ID")) {
             ResultSet resultSet = statement.executeQuery();
             List<Order> list = new ArrayList<>();
-            while (resultSet.next()){
+            while (resultSet.next()) {
                 Order order = new Order();
                 order.id = resultSet.getInt(1);
                 order.userName = resultSet.getString(2);
@@ -261,7 +263,7 @@ public class Sql {
                 "         left join GOODS\n" +
                 "              on \"ORDER\".GOODS_ID = GOODS.ID\n" +
                 "         left join USER\n" +
-                "              on \"ORDER\".USER_ID = USER.ID")){
+                "              on \"ORDER\".USER_ID = USER.ID")) {
             ResultSet resultSet = statement.executeQuery();
 
             List<Order> list = new ArrayList<>();
