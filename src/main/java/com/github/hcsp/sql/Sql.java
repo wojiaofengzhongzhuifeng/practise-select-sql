@@ -1,11 +1,23 @@
 
 package com.github.hcsp.sql;
+
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Sql {
 // 用户表：
@@ -62,6 +74,13 @@ public class Sql {
         String tel;
         String address;
 
+        public User(Integer id, String name, String tel, String address) {
+            this.id = id;
+            this.name = name;
+            this.tel = tel;
+            this.address = address;
+        }
+
         @Override
         public String toString() {
             return "User{" + "id=" + id + ", name='" + name + '\'' + ", tel='" + tel + '\'' + ", address='" + address + '\'' + '}';
@@ -100,7 +119,21 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        return null;
+        List<User> users;
+        try (SqlSession session = sqlSessionFactory.openSession()) {
+            Map<String, Object> param = new HashMap<>();
+            param.put("ids", Arrays.asList(1, 2, 3, 4));
+            users = session.selectList("org.mybatis.example.UserMapper.selectUser", param);
+            session.delete("org.mybatis.example.UserMapper.deleteUser");
+            session.selectList("org.mybatis.example.UserMapper.selectUser", param);
+        }
+        System.out.println(users);
+        return users;
+    }
+
+    interface UserMapper {
+        @Select("SELECT * from user")
+        List<User> selectUsers();
     }
 
     // 商品及其营收
@@ -201,17 +234,31 @@ public class Sql {
         return null;
     }
 
+    static SqlSessionFactory sqlSessionFactory;
+
+    static {
+        String resource = "db/mybatis/config.xml";
+        try {
+            InputStream inputStream = Resources.getResourceAsStream(resource);
+            sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
     public static void main(String[] args) throws SQLException {
-        File projectDir = new File(System.getProperty("basedir", System.getProperty("user.dir")));
-        String jdbcUrl = "jdbc:h2:file:" + new File(projectDir, "target/test").getAbsolutePath();
-        try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "Jxi1Oxc92qSj")) {
-            System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
-            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
-            System.out.println(getGoodsAndGmv(connection));
-            System.out.println(getInnerJoinOrders(connection));
-            System.out.println(getLeftJoinOrders(connection));
-        }
+        System.out.println(getUsersByPageOrderedByIdDesc(null, 0, 0));
+
+//        File projectDir = new File(System.getProperty("basedir", System.getProperty("user.dir")));
+//        String jdbcUrl = "jdbc:h2:file:" + new File(projectDir, "target/test").getAbsolutePath();
+//        try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "Jxi1Oxc92qSj")) {
+//            System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
+//            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
+//            System.out.println(getGoodsAndGmv(connection));
+//            System.out.println(getInnerJoinOrders(connection));
+//            System.out.println(getLeftJoinOrders(connection));
+//        }
     }
 
 }
