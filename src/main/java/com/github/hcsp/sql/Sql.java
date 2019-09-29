@@ -77,6 +77,8 @@ public class Sql {
      * 查询有多少所有用户曾经买过指定的商品
      *
      * @param goodsId 指定的商品ID
+     * @param databaseConnection 数据库连接
+     * @throws SQLException sql异常
      * @return 有多少用户买过这个商品
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
@@ -87,7 +89,7 @@ public class Sql {
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
         //预定义编译语句
-        try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT count(distinct USER_ID) FROM `ORDER` WHERE GOODS_ID = ?")) {
+        try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT COUNT(distinct USER_ID) FROM `ORDER` WHERE GOODS_ID = ?")) {
             //传递参数
             statement.setInt(1, goodsId);
             //执行，返回结果集
@@ -105,6 +107,7 @@ public class Sql {
      *
      * @param pageNum 第几页，从1开始
      * @param pageSize 每页有多少个元素
+     * @param databaseConnection 数据库连接
      * @return 指定页中的用户
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
@@ -115,7 +118,7 @@ public class Sql {
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) {
         List<User> users = new ArrayList<>();
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select ID,NAME,TEL,ADDRESS from USER limit ?,?")){
+        try (PreparedStatement statement = databaseConnection.prepareStatement("select ID,NAME,TEL,ADDRESS from USER order by ID desc limit ? offset ?")){
             statement.setInt(1, (pageNum-1)*pageSize);
             statement.setInt(2, pageSize);
             ResultSet resultSet = statement.executeQuery();
@@ -148,6 +151,9 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     * @param databaseConnection 数据库连接
+     * @throws SQLException  sql
+     * @return 查询所有的商品及其销售额，按照销售额从大到小排序
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -198,6 +204,9 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     * @param databaseConnection 数据库连接
+     * @throws SQLException  sql
+     * @return 订单信息，只查询用户名、商品名齐全的订单
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -217,20 +226,22 @@ public class Sql {
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
 
-        String sql = "SELECT `ORDER`.ID                                   ORDER_ID,\n" +
-                "       USER.NAME                                    USER_NAME,\n" +
-                "       GOODS.NAME                                   GOOD_NAME,\n" +
-                "       SUM(`ORDER`.GOODS_NUM * `ORDER`.GOODS_PRICE) TOTAL_PRICE\n" +
-                "FROM USER\n" +
-                "       INNER JOIN `ORDER` ON USER.ID = `ORDER`.USER_ID\n" +
-                "       INNER JOIN GOODS ON `ORDER`.ID = GOODS.ID\n" +
-                "GROUP BY `ORDER`.ID";
+        String sql = "SELECT `ORDER`.ID                              ORDER_ID,\n" +
+                "       USER.NAME                               USER_NAME,\n" +
+                "       GOODS.NAME                              GOOD_NAME,\n" +
+                "       `ORDER`.GOODS_NUM * `ORDER`.GOODS_PRICE TOTAL_PRICE\n" +
+                "FROM `ORDER`\n" +
+                "       INNER JOIN USER ON USER.ID = `ORDER`.USER_ID\n" +
+                "       INNER JOIN GOODS ON  GOODS.ID = `ORDER`.GOODS_ID";
         return commonfunction(databaseConnection, sql);
     }
 
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     * @param databaseConnection 数据库连接
+     * @throws SQLException  sql
+     * @return 所有订单信息，哪怕它的用户名、商品名缺失
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -254,14 +265,10 @@ public class Sql {
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
 
-        String sql = "SELECT `ORDER`.ID                                   ORDER_ID,\n" +
-                "       USER.NAME                                    USER_NAME,\n" +
-                "       GOODS.NAME                                   GOOD_NAME,\n" +
-                "       SUM(`ORDER`.GOODS_NUM * `ORDER`.GOODS_PRICE) TOTAL_PRICE\n" +
-                "FROM USER\n" +
-                "       RIGHT JOIN  `ORDER` ON USER.ID = `ORDER`.USER_ID\n" +
-                "       LEFT JOIN  GOODS ON GOODS.ID = `ORDER`.GOODS_ID\n" +
-                "GROUP BY `ORDER`.ID";
+        String sql = "SELECT `ORDER`.ID ORDER_ID, USER.NAME USER_NAME, GOODS.NAME GOOD_NAME, GOODS_NUM * GOODS_PRICE TOTAL_PRICE\n" +
+                "FROM `ORDER`\n" +
+                "            LEFT JOIN USER ON USER.ID = `ORDER`.USER_ID\n" +
+                "            LEFT JOIN GOODS ON GOODS.ID = `ORDER`.GOODS_ID;";
         return commonfunction(databaseConnection, sql);
 
     }
