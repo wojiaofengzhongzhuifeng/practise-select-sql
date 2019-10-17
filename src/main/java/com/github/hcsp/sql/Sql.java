@@ -227,11 +227,7 @@ public class Sql {
             ResultSet resultSet = statement.executeQuery();
             List<Order> orders = new ArrayList<>();
             while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt(1);
-                order.userName = resultSet.getString(2);
-                order.goodsName = resultSet.getString(3);
-                order.totalPrice = resultSet.getBigDecimal(4);
+                Order order = getOrder(resultSet);
                 orders.add(order);
             }
             return orders;
@@ -272,15 +268,20 @@ public class Sql {
             ResultSet resultSet = statement.executeQuery();
             List<Order> orders = new ArrayList<>();
             while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt(1);
-                order.userName = resultSet.getString(2);
-                order.goodsName = resultSet.getString(3);
-                order.totalPrice = resultSet.getBigDecimal(4);
+                Order order = getOrder(resultSet);
                 orders.add(order);
             }
             return orders;
         }
+    }
+
+    public static Order getOrder(ResultSet resultSet) throws SQLException {
+        Order order = new Order();
+        order.id = resultSet.getInt(1);
+        order.userName = resultSet.getString(2);
+        order.goodsName = resultSet.getString(3);
+        order.totalPrice = resultSet.getBigDecimal(4);
+        return order;
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
@@ -288,11 +289,11 @@ public class Sql {
         File projectDir = new File(System.getProperty("basedir", System.getProperty("user.dir")));
         String jdbcUrl = "jdbc:h2:file:" + new File(projectDir, "target/test").getAbsolutePath();
         try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "Jxi1Oxc92qSj")) {
-//            System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
+            System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
             System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
-//            System.out.println(getGoodsAndGmv(connection));
-//            System.out.println(getInnerJoinOrders(connection));
-//            System.out.println(getLeftJoinOrders(connection));
+            System.out.println(getGoodsAndGmv(connection));
+            System.out.println(getInnerJoinOrders(connection));
+            System.out.println(getLeftJoinOrders(connection));
         }
     }
 
