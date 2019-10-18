@@ -1,14 +1,10 @@
 
 package com.github.hcsp.sql;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Sql {
@@ -85,24 +81,15 @@ public class Sql {
 // +-----+
 // | 2   |
 // +-----+
-    static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT COUNT(DISTINCT USER_ID) AS COUNT\n" +
-                "FROM `ORDER`\n" +
-                "WHERE GOODS_ID = ?")) {
-            statement.setInt(1, goodsId);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                return resultSet.getInt(1);
-            }
-        }
-        return -1;
+    public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
+        return 0;
     }
 
     /**
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum  第几页，从1开始
+     * @param pageNum 第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
      */
@@ -112,28 +99,8 @@ public class Sql {
 // +----+----------+------+----------+
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
-    static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        List<User> lists = new ArrayList<>();
-        int offset = (pageNum - 1) * pageSize;
-        System.out.println("offset = " + offset);
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select *\n" +
-                "from USER\n" +
-                "order by id desc\n" +
-                "limit ?,?")) {
-            preparedStatement.setInt(1, offset);
-            preparedStatement.setInt(2, pageSize);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                User user = new User();
-                user.id = resultSet.getInt(1);
-                user.name = resultSet.getString(2);
-                user.tel = resultSet.getString(3);
-                user.address = resultSet.getString(4);
-                lists.add(user);
-            }
-            return lists;
-        }
-
+    public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
+        return null;
     }
 
     // 商品及其营收
@@ -164,24 +131,8 @@ public class Sql {
 //  +----+--------+------+
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
-    static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        List<GoodsAndGmv> goodsAndGmvs = new ArrayList<>();
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select GOODS_ID,NAME, SUM(GOODS_NUM * GOODS_PRICE) as GMV\n" +
-                "from `ORDER`\n" +
-                "    join GOODS G on `ORDER`.GOODS_ID = G.id\n" +
-                "group by GOODS_ID\n" +
-                "order by GMV desc")) {
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
-                goodsAndGmv.goodsId = resultSet.getInt(1);
-                goodsAndGmv.goodsName = resultSet.getString(2);
-                goodsAndGmv.gmv = resultSet.getBigDecimal(3);
-                goodsAndGmvs.add(goodsAndGmv);
-            }
-
-        }
-        return goodsAndGmvs;
+    public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
+        return null;
     }
 
 
@@ -218,27 +169,8 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
-    static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        List<Order> orderList = new ArrayList<>();
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select `ORDER`.ID                   AS ORDER_ID,\n" +
-                "       USER.NAME                    AS USER_NAME,\n" +
-                "       GOODS.NAME                   AS GOODS_NAME,\n" +
-                "       GOODS_PRICE * GOODS_NUM AS TOTAL_PRICE\n" +
-                "from `ORDER`\n" +
-                "         join USER on `ORDER`.USER_ID = USER.ID\n" +
-                "         join GOODS on `ORDER`.GOODS_ID = GOODS.ID")) {
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt(1);
-                order.userName = resultSet.getString(2);
-                order.goodsName = resultSet.getString(3);
-                order.totalPrice = resultSet.getBigDecimal(4);
-                orderList.add(order);
-            }
-
-        }
-        return orderList;
+    public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
+        return null;
     }
 
     /**
@@ -265,23 +197,8 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
-    static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        List<Order> lists = new ArrayList<>();
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select `ORDER`.ID as ORDER_ID, U.NAME as USER_NAME, G.NAME AS GOODS_NAME, GOODS_PRICE * GOODS_NUM AS TOTAL_PRICE\n" +
-                "from `ORDER`\n" +
-                "         left join GOODS G on G.ID = `ORDER`.GOODS_ID\n" +
-                "         left join USER U on `ORDER`.USER_ID = U.ID")) {
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt(1);
-                order.userName = resultSet.getString(2);
-                order.goodsName = resultSet.getString(3);
-                order.totalPrice = resultSet.getBigDecimal(4);
-                lists.add(order);
-            }
-        }
-        return lists;
+    public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
+        return null;
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
