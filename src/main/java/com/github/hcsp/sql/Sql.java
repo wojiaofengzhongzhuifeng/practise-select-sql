@@ -3,7 +3,11 @@ package com.github.hcsp.sql;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,12 +85,12 @@ public class Sql {
 // +-----+
 // | 2   |
 // +-----+
-    public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(DISTINCT USER_ID) AS COUNT\n" +
+    static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
+        try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT COUNT(DISTINCT USER_ID) AS COUNT\n" +
                 "FROM `ORDER`\n" +
                 "WHERE GOODS_ID = ?")) {
-            preparedStatement.setInt(1, goodsId);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            statement.setInt(1, goodsId);
+            ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 return resultSet.getInt(1);
             }
@@ -108,7 +112,7 @@ public class Sql {
 // +----+----------+------+----------+
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
-    public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
+    static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
         List<User> lists = new ArrayList<>();
         int offset = (pageNum - 1) * pageSize;
         System.out.println("offset = " + offset);
@@ -160,7 +164,7 @@ public class Sql {
 //  +----+--------+------+
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
-    public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
+    static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
         List<GoodsAndGmv> goodsAndGmvs = new ArrayList<>();
         try (PreparedStatement statement = databaseConnection.prepareStatement("select GOODS_ID,NAME, SUM(GOODS_NUM * GOODS_PRICE) as GMV\n" +
                 "from `ORDER`\n" +
@@ -214,7 +218,7 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
-    public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
+    static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orderList = new ArrayList<>();
         try (PreparedStatement statement = databaseConnection.prepareStatement("select `ORDER`.ID                   AS ORDER_ID,\n" +
                 "       USER.NAME                    AS USER_NAME,\n" +
@@ -261,7 +265,7 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
-    public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
+    static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> lists = new ArrayList<>();
         try (PreparedStatement statement = databaseConnection.prepareStatement("select `ORDER`.ID as ORDER_ID, U.NAME as USER_NAME, G.NAME AS GOODS_NAME, GOODS_PRICE * GOODS_NUM AS TOTAL_PRICE\n" +
                 "from `ORDER`\n" +
