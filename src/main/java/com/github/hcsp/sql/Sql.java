@@ -1,10 +1,14 @@
 
 package com.github.hcsp.sql;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Sql {
@@ -62,6 +66,13 @@ public class Sql {
         String tel;
         String address;
 
+        public User(Integer id, String name, String tel, String address) {
+            this.id = id;
+            this.name = name;
+            this.tel = tel;
+            this.address = address;
+        }
+
         @Override
         public String toString() {
             return "User{" + "id=" + id + ", name='" + name + '\'' + ", tel='" + tel + '\'' + ", address='" + address + '\'' + '}';
@@ -74,6 +85,8 @@ public class Sql {
      *
      * @param goodsId 指定的商品ID
      * @return 有多少用户买过这个商品
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
 // +-----+
@@ -82,16 +95,26 @@ public class Sql {
 // | 2   |
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-        return 0;
+        try (PreparedStatement statement = databaseConnection.prepareStatement(String.format("select" +
+                " count(distinct USER_ID) as count from \"ORDER\" where GOODS_ID=?"))) {
+            statement.setInt(1, goodsId);
+            ResultSet result = statement.executeQuery();
+            while (result.next()) {
+                return result.getInt(1);
+            }
+        }
+        return -1;
     }
 
     /**
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum 第几页，从1开始
+     * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
 // +----+----------+------+----------+
@@ -100,7 +123,18 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        return null;
+        try (PreparedStatement statement = databaseConnection.prepareStatement(String.format("select id, name, tel, address, " +
+                "created_at, updated_at from USER  order by id desc limit ?,?"))) {
+            statement.setInt(1, pageSize);
+            statement.setInt(2, pageNum);
+            ResultSet resultSet = statement.executeQuery();
+            List<User> user = new ArrayList<>();
+            while (resultSet.next()) {
+                user.add(new User(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3),
+                        resultSet.getString(4)));
+            }
+            return user;
+        }
     }
 
     // 商品及其营收
@@ -108,6 +142,12 @@ public class Sql {
         Integer goodsId; // 商品ID
         String goodsName; // 商品名
         BigDecimal gmv; // 商品的所有销售额
+
+        public GoodsAndGmv(Integer goodsId, String goodsName, BigDecimal gmv) {
+            this.goodsId = goodsId;
+            this.goodsName = goodsName;
+            this.gmv = gmv;
+        }
 
         @Override
         public String toString() {
@@ -118,6 +158,9 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
+     * @return list of GoodsAndGmv
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -132,7 +175,17 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        return null;
+        try (PreparedStatement statement = databaseConnection.prepareStatement(String.format("select GOODS.ID AS ID," +
+                "NAME, " + "sum(GOODS_NUM*GOODS_PRICE) AS GMV from GOODS\ninner join \"ORDER\" " +
+                "where GOODS.ID=GOODS_ID group by Goods.ID order by GMV desc"))) {
+            ResultSet resultSet = statement.executeQuery();
+            List<GoodsAndGmv> goodsAndGmvs = new ArrayList<>();
+            while (resultSet.next()) {
+                goodsAndGmvs.add(new GoodsAndGmv(resultSet.getInt(1), resultSet.getString(2),
+                        resultSet.getBigDecimal(3)));
+            }
+            return goodsAndGmvs;
+        }
     }
 
 
@@ -143,6 +196,13 @@ public class Sql {
         String goodsName; // 商品名
         BigDecimal totalPrice; // 订单总金额
 
+        public Order(Integer id, String userName, String goodsName, BigDecimal totalPrice) {
+            this.id = id;
+            this.userName = userName;
+            this.goodsName = goodsName;
+            this.totalPrice = totalPrice;
+        }
+
         @Override
         public String toString() {
             return "Order{" + "id=" + id + ", userName='" + userName + '\'' + ", goodsName='" + goodsName + '\'' + ", totalPrice=" + totalPrice + '}';
@@ -152,6 +212,9 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
+     * @return list of orders
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -170,12 +233,25 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        return null;
+        try (PreparedStatement statement = databaseConnection.prepareStatement(String.format("select \"ORDER\".ID," +
+                "USER.NAME,GOODS.NAME,GOODS_NUM*GOODS_PRICE as TOTAL_PRICE from \"ORDER\" " +
+                "inner join USER inner join GOODS\non USER_ID=USER.ID and GOODS_ID=GOODS.ID"))) {
+            ResultSet resultSet = statement.executeQuery();
+            List<Order> orders = new ArrayList<>();
+            while (resultSet.next()) {
+                orders.add(new Order(resultSet.getInt(1), resultSet.getString(2),
+                        resultSet.getString(3), resultSet.getBigDecimal(4)));
+            }
+            return orders;
+        }
     }
 
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
+     * @return list of orders
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -198,7 +274,18 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        return null;
+        try (PreparedStatement statement = databaseConnection.prepareStatement(String.format("select \"ORDER\".ID," +
+                "USER.NAME,GOODS.NAME,GOODS_NUM*GOODS_PRICE as TOTAL_PRICE " +
+                "from \"ORDER\"\nleft join USER\non \"ORDER\".USER_ID=USER.ID\nleft join " +
+                "GOODS\non \"ORDER\".GOODS_ID=GOODS.ID"))) {
+            ResultSet resultSet = statement.executeQuery();
+            List<Order> orders = new ArrayList<>();
+            while (resultSet.next()) {
+                orders.add(new Order(resultSet.getInt(1), resultSet.getString(2),
+                        resultSet.getString(3), resultSet.getBigDecimal(4)));
+            }
+            return orders;
+        }
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
@@ -213,5 +300,4 @@ public class Sql {
             System.out.println(getLeftJoinOrders(connection));
         }
     }
-
 }
