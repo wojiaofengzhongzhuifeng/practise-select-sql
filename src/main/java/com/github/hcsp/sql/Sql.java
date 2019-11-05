@@ -3,7 +3,11 @@ package com.github.hcsp.sql;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +75,8 @@ public class Sql {
     /**
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
-     *
+     * @param databaseConnection db connect
+     * @throws SQLException throws exception
      * @param goodsId 指定的商品ID
      * @return 有多少用户买过这个商品
      */
@@ -98,6 +103,8 @@ public class Sql {
      *
      * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
      * @return 指定页中的用户
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
@@ -107,7 +114,7 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select ID,NAME,TEL,ADDRESS from USER limit ?, ?;")) {
+        try (PreparedStatement statement = databaseConnection.prepareStatement("select ID,NAME,TEL,ADDRESS from USER order by id desc limit ?, ?;")) {
             statement.setInt(1, (pageNum - 1) * pageSize);
             statement.setInt(2, pageSize);
             ResultSet resultSet = statement.executeQuery();
@@ -144,6 +151,9 @@ public class Sql {
 
     /**
      * 题目3：
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
+     * @return list of GoodsAndGmv
      * 查询所有的商品及其销售额，按照销售额从大到小排序
      */
 // 预期的结果应该如图所示
@@ -196,6 +206,9 @@ public class Sql {
 
     /**
      * 题目4：
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
+     * @return list of orders
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
      */
 // 预期的结果为：
@@ -239,6 +252,9 @@ public class Sql {
 
     /**
      * 题目5：
+     * @throws SQLException throws exception
+     * @param databaseConnection db connection
+     * @return list of orders
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
      */
 // 预期的结果为：
