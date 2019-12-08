@@ -185,10 +185,9 @@ public class Sql {
         }
     }
 
-
     // 订单详细信息
     public static class Order {
-        Integer id; // 订单ID
+        Integer id; // 订单id
         String userName; // 用户名
         String goodsName; // 商品名
         BigDecimal totalPrice; // 订单总金额
