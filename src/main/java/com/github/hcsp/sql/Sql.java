@@ -1,10 +1,10 @@
 
 package com.github.hcsp.sql;
+
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Sql {
@@ -72,8 +72,10 @@ public class Sql {
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
      *
-     * @param goodsId 指定的商品ID
+     * @param goodsId            指定的商品ID
+     * @param databaseConnection 数据库连接
      * @return 有多少用户买过这个商品
+     * @throws SQLException 抛出SQL异常
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
 // +-----+
@@ -82,16 +84,27 @@ public class Sql {
 // | 2   |
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-        return 0;
+        try (PreparedStatement statement = databaseConnection
+                .prepareStatement("select count( distinct user_id) from `order` where goods_id = ?")) {
+            statement.setInt(1, goodsId);
+            ResultSet set = statement.executeQuery();
+
+            while (set.next()) {
+                return set.getInt(1);
+            }
+        }
+        return -1;
     }
 
     /**
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum 第几页，从1开始
-     * @param pageSize 每页有多少个元素
+     * @param databaseConnection 数据库连接
+     * @param pageNum            第几页，从1开始
+     * @param pageSize           每页有多少个元素
      * @return 指定页中的用户
+     * @throws SQLException 抛出SQL异常
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
 // +----+----------+------+----------+
@@ -100,7 +113,23 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        return null;
+        List<User> users = new ArrayList();
+        try (PreparedStatement statement = databaseConnection
+                .prepareStatement("select * from user order by id desc limit ?,?")) {
+            statement.setInt(1, (pageNum - 1) * pageSize);
+            statement.setInt(2, pageSize);
+            ResultSet set = statement.executeQuery();
+
+            while (set.next()) {
+                User user = new User();
+                user.id = set.getInt(1);
+                user.name = set.getString(2);
+                user.tel = set.getString(3);
+                user.address = set.getString(4);
+                users.add(user);
+            }
+            return users;
+        }
     }
 
     // 商品及其营收
@@ -118,6 +147,10 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     *
+     * @param databaseConnection 数据库连接
+     * @throws SQLException 抛出SQL异常
+     * @return 所有的商品及其销售额排序大小后的结果
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -132,9 +165,25 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        return null;
-    }
+        List<GoodsAndGmv> goodsAndGmvs = new ArrayList();
+        try (PreparedStatement statement = databaseConnection
+                .prepareStatement("select GOODS.ID as ID, GOODS.NAME as NAME, SUM(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE) as GMV from GOODS\n" +
+                        "join \"ORDER\"\n" +
+                        "on GOODS.ID = \"ORDER\".GOODS_ID\n" +
+                        "group by GOODS.ID\n" +
+                        "order by GMV desc")) {
+            ResultSet set = statement.executeQuery();
 
+            while (set.next()) {
+                GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
+                goodsAndGmv.goodsId = set.getInt(1);
+                goodsAndGmv.goodsName = set.getString(2);
+                goodsAndGmv.gmv = set.getBigDecimal(3);
+                goodsAndGmvs.add(goodsAndGmv);
+            }
+            return goodsAndGmvs;
+        }
+    }
 
     // 订单详细信息
     public static class Order {
@@ -152,6 +201,10 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     *
+     * @param databaseConnection 数据库连接
+     * @throws SQLException 抛出SQL异常
+     * @return 订单信息
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -170,12 +223,38 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        return null;
+        List<Order> orders = new ArrayList();
+        try (PreparedStatement statement = databaseConnection
+                .prepareStatement("select \"ORDER\".ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,GOODS_NUM * GOODS_PRICE as TOTAL_PRICE from \"ORDER\"\n" +
+                        "join USER\n" +
+                        "on \"ORDER\".USER_ID = USER.ID\n" +
+                        "join GOODS\n" +
+                        "on \"ORDER\".GOODS_ID = GOODS.ID")) {
+            return getOrders(orders, statement);
+        }
+    }
+
+    private static List<Order> getOrders(List<Order> orders, PreparedStatement statement) throws SQLException {
+        ResultSet set = statement.executeQuery();
+
+        while (set.next()) {
+            Order order = new Order();
+            order.id = set.getInt(1);
+            order.userName = set.getString(2);
+            order.goodsName = set.getString(3);
+            order.totalPrice = set.getBigDecimal(4);
+            orders.add(order);
+        }
+        return orders;
     }
 
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     *
+     * @param databaseConnection 数据库连接
+     * @throws SQLException 抛出SQL异常
+     * @return 订单信息
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -198,7 +277,15 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        return null;
+        List<Order> orders = new ArrayList();
+        try (PreparedStatement statement = databaseConnection
+                .prepareStatement("select \"ORDER\".ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,GOODS_NUM * GOODS_PRICE as TOTAL_PRICE from \"ORDER\"\n" +
+                        "left join USER\n" +
+                        "on \"ORDER\".USER_ID = USER.ID\n" +
+                        "left join GOODS\n" +
+                        "on \"ORDER\".GOODS_ID = GOODS.ID")) {
+            return getOrders(orders, statement);
+        }
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
