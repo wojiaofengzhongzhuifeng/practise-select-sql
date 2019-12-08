@@ -226,9 +226,9 @@ public class Sql {
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orders = new ArrayList();
         try (PreparedStatement statement = databaseConnection
-                .prepareStatement("select \"ORDER\".GOODS_ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE) as TOTAL_PRICE from \"ORDER\"\n" +
+                .prepareStatement("select \"ORDER\".ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,GOODS_NUM * GOODS_PRICE as TOTAL_PRICE from \"ORDER\"\n" +
                         "join USER\n" +
-                        "on \"ORDER\".GOODS_ID = USER.ID\n" +
+                        "on \"ORDER\".USER_ID = USER.ID\n" +
                         "join GOODS\n" +
                         "on \"ORDER\".GOODS_ID = GOODS.ID")) {
             return getOrders(orders, statement);
@@ -280,9 +280,9 @@ public class Sql {
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orders = new ArrayList();
         try (PreparedStatement statement = databaseConnection
-                .prepareStatement("select \"ORDER\".GOODS_ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE) as TOTAL_PRICE from \"ORDER\"\n" +
+                .prepareStatement("select \"ORDER\".ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,GOODS_NUM * GOODS_PRICE as TOTAL_PRICE from \"ORDER\"\n" +
                         "left join USER\n" +
-                        "on \"ORDER\".GOODS_ID = USER.ID\n" +
+                        "on \"ORDER\".USER_ID = USER.ID\n" +
                         "left join GOODS\n" +
                         "on \"ORDER\".GOODS_ID = GOODS.ID")) {
             return getOrders(orders, statement);
