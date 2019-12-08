@@ -115,7 +115,7 @@ public class Sql {
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
         List<User> users = new ArrayList();
         try (PreparedStatement statement = databaseConnection
-                .prepareStatement("select * from user order by ID limit ?,?")) {
+                .prepareStatement("select * from user order by id desc limit ?,?")) {
             statement.setInt(1, (pageNum - 1) * pageSize);
             statement.setInt(2, pageSize);
             ResultSet set = statement.executeQuery();
@@ -187,7 +187,7 @@ public class Sql {
 
     // 订单详细信息
     public static class Order {
-        Integer id; // 订单id
+        Integer id; // 订单ID
         String userName; // 用户名
         String goodsName; // 商品名
         BigDecimal totalPrice; // 订单总金额
