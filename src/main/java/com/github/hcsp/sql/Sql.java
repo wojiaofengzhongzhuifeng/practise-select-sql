@@ -85,7 +85,7 @@ public class Sql {
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
         try (PreparedStatement statement = databaseConnection
-                .prepareStatement("select count( distinct id) from `order` where goods_id = ?")) {
+                .prepareStatement("select count( distinct user_id) from `order` where goods_id = ?")) {
             statement.setInt(1, goodsId);
             ResultSet set = statement.executeQuery();
 
@@ -226,11 +226,11 @@ public class Sql {
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orders = new ArrayList();
         try (PreparedStatement statement = databaseConnection
-                .prepareStatement("select \"ORDER\".ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,(GOODS_NUM * GOODS_PRICE) as TOTAL_PRICE from \"ORDER\"\n" +
+                .prepareStatement("select \"ORDER\".GOODS_ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,(GOODS_NUM * GOODS_PRICE) as TOTAL_PRICE from \"ORDER\"\n" +
                         "join USER\n" +
-                        "on \"ORDER\".ID = USER.ID\n" +
+                        "on \"ORDER\".GOODS_ID = USER.ID\n" +
                         "join GOODS\n" +
-                        "on GOODS_ID = GOODS.ID")) {
+                        "on \"ORDER\".GOODS_ID = GOODS.ID")) {
             return getOrders(orders, statement);
         }
     }
@@ -280,11 +280,11 @@ public class Sql {
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orders = new ArrayList();
         try (PreparedStatement statement = databaseConnection
-                .prepareStatement("select \"ORDER\".ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,(GOODS_NUM * GOODS_PRICE) as TOTAL_PRICE from \"ORDER\"\n" +
+                .prepareStatement("select \"ORDER\".GOODS_ID as ORDER_ID,USER.NAME as USER_NAME,GOODS.NAME as GOODS_NAME,(GOODS_NUM * GOODS_PRICE) as TOTAL_PRICE from \"ORDER\"\n" +
                         "left join USER\n" +
-                        "on \"ORDER\".ID = USER.ID\n" +
+                        "on \"ORDER\".GOODS_ID = USER.ID\n" +
                         "left join GOODS\n" +
-                        "on GOODS_ID = GOODS.ID")) {
+                        "on \"ORDER\".GOODS_ID = GOODS.ID")) {
             return getOrders(orders, statement);
         }
     }
