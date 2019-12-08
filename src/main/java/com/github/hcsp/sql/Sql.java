@@ -150,6 +150,7 @@ public class Sql {
      *
      * @param databaseConnection 数据库连接
      * @throws SQLException 抛出SQL异常
+     * @return 所有的商品及其销售额排序大小后的结果
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -204,6 +205,7 @@ public class Sql {
      *
      * @param databaseConnection 数据库连接
      * @throws SQLException 抛出SQL异常
+     * @return 订单信息
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -253,6 +255,7 @@ public class Sql {
      *
      * @param databaseConnection 数据库连接
      * @throws SQLException 抛出SQL异常
+     * @return 订单信息
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
