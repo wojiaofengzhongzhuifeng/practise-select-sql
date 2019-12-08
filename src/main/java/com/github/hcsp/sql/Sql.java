@@ -116,8 +116,8 @@ public class Sql {
         List<User> users = new ArrayList();
         try (PreparedStatement statement = databaseConnection
                 .prepareStatement("select * from user limit ?,?")) {
-            statement.setInt(1, (pageNum - 1) * pageSize);
-            statement.setInt(2, pageSize);
+            statement.setInt(2, (pageNum - 1) * pageSize);
+            statement.setInt(1, pageSize);
             ResultSet set = statement.executeQuery();
 
             while (set.next()) {
