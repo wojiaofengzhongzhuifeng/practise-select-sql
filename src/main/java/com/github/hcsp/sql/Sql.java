@@ -73,6 +73,8 @@ public class Sql {
      * 查询有多少所有用户曾经买过指定的商品
      *
      * @param goodsId 指定的商品ID
+     * @param databaseConnection 数据库连接
+     * @throws SQLException when executing queries
      * @return 有多少用户买过这个商品
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
@@ -99,6 +101,8 @@ public class Sql {
      *
      * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
+     * @param databaseConnection 数据库连接
+     * @throws SQLException when executing queries      *
      * @return 指定页中的用户
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
@@ -141,6 +145,9 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     * @param databaseConnection 数据库连接
+     * @throws SQLException when executing queries
+     * @return 所有的查询到的商品及其销售额，通过{@link GoodsAndGmv}表示，按照销售额从大到小排序
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -188,6 +195,9 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     * @param databaseConnection 数据库连接
+     * @throws SQLException when executing queries
+     * @return 所有的查询到的订单信息，通过{@link Order}类表示
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -218,6 +228,9 @@ public class Sql {
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     * @param databaseConnection 数据库连接
+     * @throws SQLException when executing queries
+     * @return 所有的查询到的订单信息，通过{@link Order}类表示
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -243,7 +256,7 @@ public class Sql {
 
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select \"ORDER\".ID, user.NAME, goods.NAME, \"ORDER\".GOODS_NUM*\"ORDER\".GOODS_PRICE as total_price from \"ORDER\"\n" +
                 "left join USER on \"ORDER\".USER_ID = USER.ID\n" +
-                "left join GOODS on \"ORDER\".GOODS_ID = GOODS.ID")){
+                "left join GOODS on \"ORDER\".GOODS_ID = GOODS.ID")) {
 
             return getOrders(preparedStatement);
         }
