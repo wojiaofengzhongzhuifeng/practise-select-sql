@@ -1,8 +1,6 @@
 
 package com.github.hcsp.sql;
 
-import com.sun.org.glassfish.gmbal.ParameterNames;
-
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.*;
