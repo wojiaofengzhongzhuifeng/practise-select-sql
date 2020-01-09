@@ -79,10 +79,10 @@ public class Sql {
     /**
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
-     * @throws SQLException
      * @param databaseConnection 数据库连接
      * @param goodsId 指定的商品ID
      * @return 有多少用户买过这个商品
+     * @throws SQLException
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
 // +-----+
@@ -91,13 +91,6 @@ public class Sql {
 // | 2   |
 // +-----+
 
-    /**
-     *
-     * @param databaseConnection
-     * @param goodsId
-     * @return
-     * @throws SQLException
-     */
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws  SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT COUNT(DISTINCT USER_ID) FROM `ORDER` WHERE GOODS_ID=?")) {
             preparedStatement.setInt(1, goodsId);
@@ -112,11 +105,11 @@ public class Sql {
     /**
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
-     * @throws SQLException
      * @param databaseConnection 数据库连接
      * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
+     * @throws SQLException
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
 // +----+----------+------+----------+
@@ -124,15 +117,6 @@ public class Sql {
 // +----+----------+------+----------+
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
-
-    /**
-     *
-     * @param databaseConnection
-     * @param pageNum
-     * @param pageSize
-     * @return
-     * @throws SQLException
-     */
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
         List<User> userList = new ArrayList<>();
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT * FROM USER ORDER BY ID DESC LIMIT ?,?")) {
@@ -171,9 +155,9 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
-     * @throws SQLException
      * @param databaseConnection 数据库连接
      * @return 预期的GMV结果
+     * @throws SQLException
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -187,13 +171,6 @@ public class Sql {
 //  +----+--------+------+
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
-
-    /**
-     *
-     * @param databaseConnection
-     * @return
-     * @throws SQLException
-     */
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
         List<GoodsAndGmv> goodsAndGmvs = new ArrayList<>();
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT \"ORDER\".GOODS_ID, GOODS.NAME, SUM(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE)as GMV\n" +
@@ -238,9 +215,9 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
-     * @throws Exception if has error
      * @param databaseConnection 数据库连接
      * @return 预期的结果
+     * @throws SQLException
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -258,13 +235,6 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
-
-    /**
-     *
-     * @param databaseConnection
-     * @return
-     * @throws SQLException
-     */
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orderList = new ArrayList<>();
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT \"ORDER\".ID, USER.NAME,GOODS.NAME, SUM(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE) as TOTOL_PRICE\n" +
@@ -291,6 +261,7 @@ public class Sql {
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
      * @param databaseConnection 数据库连接
      * @return 预期结果
+     * @throws SQLException
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -312,12 +283,6 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
-    /**
-     *
-     * @param databaseConnection
-     * @return
-     * @throws SQLException
-     */
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orderList = new ArrayList<>();
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT \"ORDER\".ID, USER.NAME, GOODS.NAME, SUM(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE) as TOTOL_PRICE\n" +
