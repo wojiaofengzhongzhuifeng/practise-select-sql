@@ -215,7 +215,7 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
-     * @throws SQLException
+     * @throws Exception if has error
      * @param databaseConnection 数据库连接
      * @return 预期的结果
      */
@@ -259,7 +259,7 @@ public class Sql {
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
-     * @throws SQLException
+     * @throws Exception if has error
      * @param databaseConnection 数据库连接
      * @return 预期结果
      */
