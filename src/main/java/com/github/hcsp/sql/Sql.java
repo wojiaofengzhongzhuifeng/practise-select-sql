@@ -280,6 +280,7 @@ public class Sql {
                 order.totalPrice = resultSet.getBigDecimal(4);
                 orders.add(order);
             }
+
             return orders;
         }
     }
