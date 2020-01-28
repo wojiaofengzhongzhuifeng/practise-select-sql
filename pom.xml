@@ -51,8 +51,9 @@
             </plugin>
             <plugin>
                 <groupId>org.flywaydb</groupId>
-<artifactId>flyway-maven-plugin</artifactId>
-<version>5.2.4</version>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>5.2.4</version>
+
 <executions>
     <execution>
         <id>test-database-setup</id>
