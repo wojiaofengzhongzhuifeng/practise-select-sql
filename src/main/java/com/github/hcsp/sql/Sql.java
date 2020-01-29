@@ -72,8 +72,9 @@ public class Sql {
     /**
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
-     *
+     * @param databaseConnection 数据库连接
      * @param goodsId 指定的商品ID
+     * @throws SQLException  sql语法错误或者没有相对应的结果列
      * @return 有多少用户买过这个商品
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
@@ -83,13 +84,11 @@ public class Sql {
 // | 2   |
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-
         try (PreparedStatement statement = databaseConnection.prepareStatement("select count(distinct USER_ID )from `ORDER` where GOODS_ID = ?")) {
             //给sql语句传递参数
             statement.setInt(1, goodsId);
             //拿到结果集
             ResultSet resultSet = statement.executeQuery();
-
             //当前结果集中是否还有可以读的数据,如果有,请继续读出来,可以使用.next方法一行一行读取数据
             while (resultSet.next()) {
                 //拿到的结果为一列的数据,这里通过getInt方法得到第一列的数据
@@ -102,9 +101,10 @@ public class Sql {
     /**
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
-     *
+     * @param databaseConnection 数据库连接
      * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
+     * @throws SQLException  sql语法错误或者没有相对应的结果列
      * @return 指定页中的用户
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
@@ -144,6 +144,9 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     * @param databaseConnection 数据库连接
+     * @throws SQLException  sql语法错误或者没有相对应的结果列
+     * @return 指定商品的id,名字以及所对应的销售总额等数据
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -193,6 +196,9 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     * @param databaseConnection 数据库连接
+     * @throws SQLException  sql语法错误或者没有相对应的结果列
+     * @return 指定订单id,用户名字，商品名字,以及对应的销售额
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -234,6 +240,9 @@ public class Sql {
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     * @param databaseConnection 数据库连接
+     *  @throws SQLException  sql语法错误或者没有相对应的结果列
+     * @return 订单id,用户名字,商品名字,对应的销售额
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
