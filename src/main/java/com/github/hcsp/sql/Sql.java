@@ -1,7 +1,6 @@
 
 package com.github.hcsp.sql;
 
-import com.sun.tools.corba.se.idl.constExpr.Or;
 
 import java.io.File;
 import java.math.BigDecimal;
