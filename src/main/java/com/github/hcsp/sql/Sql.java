@@ -113,7 +113,7 @@ public class Sql {
                 "FROM USER\n" +
                 "ORDER BY ID DESC\n" +
                 "LIMIT ?,?")) {
-            preparedStatement.setInt(1, pageNum + 1);
+            preparedStatement.setInt(1, pageSize);
             preparedStatement.setInt(2, pageSize);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<User> list = new ArrayList<>();
@@ -296,7 +296,7 @@ public class Sql {
         String jdbcUrl = "jdbc:h2:file:" + new File(projectDir, "target/test").getAbsolutePath();
         try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "Jxi1Oxc92qSj")) {
             System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
-            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
+            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 2));
             System.out.println(getGoodsAndGmv(connection));
             System.out.println(getInnerJoinOrders(connection));
             System.out.println(getLeftJoinOrders(connection));
