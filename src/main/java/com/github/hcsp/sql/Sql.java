@@ -113,8 +113,8 @@ public class Sql {
                 "FROM USER\n" +
                 "ORDER BY ID DESC\n" +
                 "LIMIT ?,?")) {
-            preparedStatement.setInt(1,pageNum+1);
-            preparedStatement.setInt(2,pageSize);
+            preparedStatement.setInt(1, pageNum + 1);
+            preparedStatement.setInt(2, pageSize);
             ResultSet resultSet = preparedStatement.executeQuery();
             List<User> list = new ArrayList<>();
             while (resultSet.next()) {
