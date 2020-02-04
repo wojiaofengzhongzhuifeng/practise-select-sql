@@ -1,10 +1,10 @@
 
 package com.github.hcsp.sql;
-
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 
 public class Sql {
@@ -72,8 +72,7 @@ public class Sql {
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
      *
-     * @param databaseConnection 数据库连接
-     * @param goodsId            指定的商品ID
+     * @param goodsId 指定的商品ID
      * @return 有多少用户买过这个商品
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
@@ -83,25 +82,15 @@ public class Sql {
 // | 2   |
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-
-        try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT COUNT(DISTINCT USER_ID) AS COUNT\n" +
-                "FROM \"ORDER\"\n" +
-                "WHERE GOODS_ID = ?")) {
-            statement.setInt(1, goodsId);
-            ResultSet resultSet = statement.executeQuery();
-            resultSet.next();
-            return resultSet.getInt("COUNT");
-        }
-
+        return 0;
     }
 
     /**
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param databaseConnection 数据库连接
-     * @param pageNum            第几页，从1开始
-     * @param pageSize           每页有多少个元素
+     * @param pageNum 第几页，从1开始
+     * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
@@ -111,24 +100,7 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT *\n" +
-                "FROM USER\n" +
-                "ORDER BY ID DESC\n" +
-                "LIMIT ?,?")) {
-            preparedStatement.setInt(1, (pageNum - 1) * pageSize);
-            preparedStatement.setInt(2, pageSize);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<User> list = new ArrayList<>();
-            while (resultSet.next()) {
-                User user = new User();
-                user.id = resultSet.getInt("ID");
-                user.name = resultSet.getString("NAME");
-                user.tel = resultSet.getString("TEL");
-                user.address = resultSet.getString("ADDRESS");
-                list.add(user);
-            }
-            return list;
-        }
+        return null;
     }
 
     // 商品及其营收
@@ -146,9 +118,6 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
-     *
-     * @param databaseConnection 数据库连接
-     * @return 返回列表
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -163,23 +132,7 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT GOODS_ID, NAME, SUM(GOODS_NUM * GOODS_PRICE) AS GMV\n" +
-                "FROM \"ORDER\"\n" +
-                "         JOIN GOODS\n" +
-                "              ON GOODS_ID = GOODS.ID\n" +
-                "GROUP BY GOODS_ID\n" +
-                "ORDER BY SUM(GOODS_NUM * GOODS_PRICE) DESC")) {
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<GoodsAndGmv> list = new ArrayList();
-            while (resultSet.next()) {
-                GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
-                goodsAndGmv.goodsId = resultSet.getInt("GOODS_ID");
-                goodsAndGmv.goodsName = resultSet.getString("NAME");
-                goodsAndGmv.gmv = resultSet.getBigDecimal("GMV");
-                list.add(goodsAndGmv);
-            }
-            return list;
-        }
+        return null;
     }
 
 
@@ -199,9 +152,6 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
-     *
-     * @param databaseConnection 数据库连接
-     * @return 返回列表
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -220,36 +170,12 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT \"ORDER\".ID              AS ORDER_ID,\n" +
-                "       \"USER\".NAME             AS USER_NAME,\n" +
-                "       \"GOODS\".NAME            AS GOODS_NAME,\n" +
-                "       GOODS_NUM * GOODS_PRICE AS TOTAL_PRICE\n" +
-                "FROM \"ORDER\"\n" +
-                "         JOIN \"USER\"\n" +
-                "              ON \"ORDER\".USER_ID = \"USER\".ID\n" +
-                "         JOIN \"GOODS\"\n" +
-                "              ON \"ORDER\".GOODS_ID = \"GOODS\".ID")) {
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<Order> list = new ArrayList();
-            while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt("ORDER_ID");
-                order.userName = resultSet.getString("USER_NAME");
-                order.goodsName = resultSet.getString("GOODS_NAME");
-                order.totalPrice = resultSet.getBigDecimal("TOTAL_PRICE");
-                list.add(order);
-            }
-            return list;
-        }
-
+        return null;
     }
 
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
-     *
-     * @param databaseConnection 数据库连接
-     * @return 返回列表
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -272,27 +198,7 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("SELECT \"ORDER\".ID              AS ORDER_ID,\n" +
-                "       \"USER\".NAME             AS USER_NAME,\n" +
-                "       \"GOODS\".NAME            AS GOODS_NAME,\n" +
-                "       GOODS_NUM * GOODS_PRICE AS TOTAL_PRICE\n" +
-                "FROM \"ORDER\"\n" +
-                "         LEFT JOIN \"USER\"\n" +
-                "                   ON \"ORDER\".USER_ID = \"USER\".ID\n" +
-                "         LEFT JOIN \"GOODS\"\n" +
-                "                   ON \"ORDER\".GOODS_ID = \"GOODS\".ID")) {
-            ResultSet resultSet = preparedStatement.executeQuery();
-            List<Order> list = new ArrayList();
-            while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt("ORDER_ID");
-                order.userName = resultSet.getString("USER_NAME");
-                order.goodsName = resultSet.getString("GOODS_NAME");
-                order.totalPrice = resultSet.getBigDecimal("TOTAL_PRICE");
-                list.add(order);
-            }
-            return list;
-        }
+        return null;
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
@@ -301,7 +207,7 @@ public class Sql {
         String jdbcUrl = "jdbc:h2:file:" + new File(projectDir, "target/test").getAbsolutePath();
         try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "Jxi1Oxc92qSj")) {
             System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
-            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 2));
+            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
             System.out.println(getGoodsAndGmv(connection));
             System.out.println(getInnerJoinOrders(connection));
             System.out.println(getLeftJoinOrders(connection));
