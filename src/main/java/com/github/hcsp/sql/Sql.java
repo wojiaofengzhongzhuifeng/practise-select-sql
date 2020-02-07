@@ -72,10 +72,10 @@ public class Sql {
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
      *
-     * @param goodsId 指定的商品ID
+     * @param goodsId            指定的商品ID
      * @param databaseConnection 数据库连接对象
-     * @exception SQLException SQL异常
      * @return 有多少用户买过这个商品
+     * @throws SQLException SQL异常
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
 // +-----+
@@ -99,11 +99,11 @@ public class Sql {
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum  第几页，从1开始
-     * @param pageSize 每页有多少个元素
+     * @param pageNum            第几页，从1开始
+     * @param pageSize           每页有多少个元素
      * @param databaseConnection 数据库连接对象
-     * @exception SQLException SQL异常
      * @return 指定页中的用户
+     * @throws SQLException SQL异常
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
 // +----+----------+------+----------+
@@ -145,9 +145,10 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     *
      * @param databaseConnection 数据库连接对象
-     * @exception SQLException SQL异常
-     * @return 商品id,商品名称,商品销售总额列表
+     * @return 商品id, 商品名称, 商品销售总额列表
+     * @throws SQLException SQL异常
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -197,9 +198,10 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     *
      * @param databaseConnection 数据库连接对象
-     * @exception SQLException SQL异常
      * @return 订单信息
+     * @throws SQLException SQL异常
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -225,14 +227,7 @@ public class Sql {
                 "            join USER on \"ORDER\".USER_ID = USER.ID")) {
             statement.executeQuery();
             ResultSet resultSet = statement.getResultSet();
-            while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt(1);
-                order.userName = resultSet.getString(2);
-                order.goodsName = resultSet.getString(3);
-                order.totalPrice = resultSet.getBigDecimal(4);
-                orderList.add(order);
-            }
+            conversionResultSetToOrderList(resultSet, orderList);
         }
         return orderList;
     }
@@ -240,9 +235,10 @@ public class Sql {
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     *
      * @param databaseConnection 数据库连接对象
-     * @exception SQLException SQL异常
      * @return 订单信息
+     * @throws SQLException SQL异常
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -272,17 +268,22 @@ public class Sql {
                 "         left join USER on \"ORDER\".USER_ID = USER.ID")) {
             statement.executeQuery();
             ResultSet resultSet = statement.getResultSet();
-            while (resultSet.next()) {
-                Order order = new Order();
-                order.id = resultSet.getInt(1);
-                order.userName = resultSet.getString(2);
-                order.goodsName = resultSet.getString(3);
-                order.totalPrice = resultSet.getBigDecimal(4);
-                orderList.add(order);
-            }
+            conversionResultSetToOrderList(resultSet, orderList);
         }
         return orderList;
     }
+
+    private static void conversionResultSetToOrderList(ResultSet resultSet, List<Order> orderList) throws SQLException {
+        while (resultSet.next()) {
+            Order order = new Order();
+            order.id = resultSet.getInt(1);
+            order.userName = resultSet.getString(2);
+            order.goodsName = resultSet.getString(3);
+            order.totalPrice = resultSet.getBigDecimal(4);
+            orderList.add(order);
+        }
+    }
+
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
     public static void main(String[] args) throws SQLException {
