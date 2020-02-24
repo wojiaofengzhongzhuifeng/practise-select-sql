@@ -161,7 +161,7 @@ public class Sql {
         List<GoodsAndGmv> list = new ArrayList<>();
         try (PreparedStatement statement = databaseConnection.prepareStatement(
                 "select  `ORDER`.GOODS_ID as `ID`,G2.name, sum(GOODS_NUM*GOODS_PRICE) as `GMV` from `ORDER`\n" +
-                        "join GOODS G2 on `ORDER`.GOODS_ID = G2.ID group by G2.ID")) {
+                        "        join GOODS G2 on `ORDER`.GOODS_ID = G2.ID group by G2.ID order by `GMV` desc")) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
