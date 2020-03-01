@@ -153,7 +153,7 @@ public class Sql {
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
 
         try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT GOODS_ID as id , Goods.NAME as name, SUM(GOODS_NUM * GOODS_PRICE) as gvm\n" +
-                "FROM \"ORDER\" JOIN GOODS ON GOODS_ID = GOODS.ID GROUP BY GOODS_ID;")) {
+                "FROM \"ORDER\" JOIN GOODS ON GOODS_ID = GOODS.ID GROUP BY GOODS_ID ORDER BY gvm DESC;")) {
 
             ResultSet resultSet = statement.executeQuery();
             List goodsAndGmvList = new ArrayList();
