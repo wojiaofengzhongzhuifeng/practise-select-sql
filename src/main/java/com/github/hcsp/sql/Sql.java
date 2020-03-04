@@ -110,7 +110,7 @@ public class Sql {
 // +----+----------+------+----------+
 //    select id, name, tel, address from USER order by ID desc limit 3,3
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select id, name, tel, address from USER order by ID desc limit ?,?")) {
+        try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select id, name, tel, address from USER order by id desc limit ? offset ?")) {
             preparedStatement.setInt(1, pageNum);
             preparedStatement.setInt(2, pageSize);
 
