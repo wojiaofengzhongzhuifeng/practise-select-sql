@@ -74,6 +74,7 @@ public class Sql {
      *
      * @param goodsId 指定的商品ID
      * @return 有多少用户买过这个商品
+     * @param databaseConnection 数据连接
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
 // +-----+
@@ -81,7 +82,6 @@ public class Sql {
 // +-----+
 // | 2   |
 // +-----+
-//    SELECT COUNT(DISTINCT USER_ID) FROM "ORDER" WHERE GOODS_ID = 1
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
         try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT COUNT(DISTINCT USER_ID) FROM \"ORDER\" WHERE GOODS_ID = ?")) {
             statement.setInt(1, goodsId);
@@ -101,6 +101,7 @@ public class Sql {
      * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
+     * @param databaseConnection 数据连接
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
 // +----+----------+------+----------+
@@ -108,7 +109,6 @@ public class Sql {
 // +----+----------+------+----------+
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
-//    select id, name, tel, address from USER order by ID desc limit 3,3
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select id, name, tel, address from USER order by id desc limit ? offset ?")) {
             preparedStatement.setInt(1, pageNum);
@@ -143,6 +143,8 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     * @param databaseConnection 数据连接
+     * @return 销售额从大到小排序
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -156,10 +158,6 @@ public class Sql {
 //  +----+--------+------+
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
-//    select GOODS_ID,GOODS.NAME,SUM("ORDER".GOODS_NUM * "ORDER".GOODS_PRICE) as Gmv from "ORDER"
-//    join GOODS on GOODS_ID = GOODS.ID
-//    group by GOODS_ID
-//    order by Gmv desc
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select GOODS_ID,GOODS.NAME,SUM(\"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE) as Gmv from \"ORDER\"\n" +
                 "join GOODS on GOODS_ID = GOODS.ID\n" +
@@ -196,6 +194,8 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     * @param databaseConnection 数据连接
+     * @return 查询用户名、商品名齐全的订单，即INNER JOIN方式
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -229,6 +229,8 @@ public class Sql {
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     * @param databaseConnection 数据连接
+     * @return 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
