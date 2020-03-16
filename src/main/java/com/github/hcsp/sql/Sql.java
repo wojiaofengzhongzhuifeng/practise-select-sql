@@ -1,10 +1,10 @@
 
 package com.github.hcsp.sql;
-
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 
 public class Sql {
@@ -72,7 +72,6 @@ public class Sql {
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
      *
-     * @param databaseConnection 数据库连接
      * @param goodsId 指定的商品ID
      * @return 有多少用户买过这个商品
      */
@@ -83,22 +82,14 @@ public class Sql {
 // | 2   |
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select count(distinct user_id) from `ORDER` where GOODS_ID = ?")) {
-            statement.setInt(1, goodsId);
-            ResultSet result = statement.executeQuery();
-            while (result.next()) {
-                return result.getInt(1);
-            }
-        }
-        return -1;
+        return 0;
     }
 
     /**
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param databaseConnection 数据库连接
-     * @param pageNum  第几页，从1开始
+     * @param pageNum 第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
      */
@@ -109,22 +100,7 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select * from USER order by id desc limit ?,?;")) {
-            statement.setInt(1, (pageNum - 1) * pageSize);
-            statement.setInt(2, pageSize);
-            ResultSet result = statement.executeQuery();
-            List<User> users = new ArrayList<>();
-            while (result.next()) {
-                User user = new User();
-                user.id = result.getInt(1);
-                user.name = result.getString(2);
-                user.tel = result.getString(3);
-                user.address = result.getString(4);
-                users.add(user);
-            }
-            return users;
-        }
-
+        return null;
     }
 
     // 商品及其营收
@@ -142,8 +118,6 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
-     * @param databaseConnection 数据库连接
-     * @return 按销售额排序的列表
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -158,22 +132,7 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select A.ID, NAME, CAST(SUM(GOODS_PRICE * GOODS_NUM) AS DECIMAL)\n" +
-                "from GOODS A\n" +
-                "         join \"ORDER\" B on A.ID = B.GOODS_ID\n" +
-                "GROUP BY A.ID\n" +
-                "ORDER BY 3 DESC ")) {
-            ResultSet res = statement.executeQuery();
-            List<GoodsAndGmv> gmvs = new ArrayList<>();
-            while (res.next()) {
-                GoodsAndGmv gmv = new GoodsAndGmv();
-                gmv.goodsId = res.getInt(1);
-                gmv.goodsName = res.getString(2);
-                gmv.gmv = res.getBigDecimal(3);
-                gmvs.add(gmv);
-            }
-            return gmvs;
-        }
+        return null;
     }
 
 
@@ -193,8 +152,6 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
-     * @param databaseConnection 数据库链接
-     * @return 指定条件的列表
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -213,29 +170,12 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select a.ID, c.NAME, b.NAME, cast(GOODS_NUM * GOODS_PRICE as decimal)\n" +
-                "from \"ORDER\" a\n" +
-                "         join GOODS b on a.GOODS_ID = b.ID\n" +
-                "         join USER c on c.ID = a.USER_ID")) {
-            ResultSet res = statement.executeQuery();
-            List<Order> orders = new ArrayList<>();
-            while (res.next()) {
-                Order order = new Order();
-                order.id = res.getInt(1);
-                order.userName = res.getString(2);
-                order.goodsName = res.getString(3);
-                order.totalPrice = res.getBigDecimal(4);
-                orders.add(order);
-            }
-            return orders;
-        }
+        return null;
     }
 
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
-     * @param databaseConnection 数据库链接
-     * @return 指定条件的列表
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -258,22 +198,7 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select a.ID, c.NAME, b.NAME, cast(GOODS_NUM * GOODS_PRICE as decimal)\n" +
-                "from \"ORDER\" a\n" +
-                "         left join GOODS b on a.GOODS_ID = b.ID\n" +
-                "         left join USER c on c.ID = a.USER_ID")) {
-            ResultSet res = statement.executeQuery();
-            List<Order> orders = new ArrayList<>();
-            while (res.next()) {
-                Order order = new Order();
-                order.id = res.getInt(1);
-                order.userName = res.getString(2);
-                order.goodsName = res.getString(3);
-                order.totalPrice = res.getBigDecimal(4);
-                orders.add(order);
-            }
-            return orders;
-        }
+        return null;
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
