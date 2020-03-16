@@ -72,6 +72,7 @@ public class Sql {
      * 题目1：
      * 查询有多少所有用户曾经买过指定的商品
      *
+     * @param databaseConnection 数据库连接
      * @param goodsId 指定的商品ID
      * @return 有多少用户买过这个商品
      */
@@ -96,6 +97,7 @@ public class Sql {
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
+     * @param databaseConnection 数据库连接
      * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
@@ -140,6 +142,8 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     * @param databaseConnection 数据库连接
+     * @return 按销售额排序的列表
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -189,6 +193,8 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     * @param databaseConnection 数据库链接
+     * @return 指定条件的列表
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -228,6 +234,8 @@ public class Sql {
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     * @param databaseConnection 数据库链接
+     * @return 指定条件的列表
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
