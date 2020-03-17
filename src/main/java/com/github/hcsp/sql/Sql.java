@@ -189,12 +189,26 @@ public class Sql {
             return "Order{" + "id=" + id + ", userName='" + userName + '\'' + ", goodsName='" + goodsName + '\'' + ", totalPrice=" + totalPrice + '}';
         }
     }
+    private static List<Order> GetOrders(Connection databaseConnection,String sql) throws SQLException {
+        try (PreparedStatement statement = databaseConnection.prepareStatement(sql)) {
+            ResultSet res = statement.executeQuery();
+            List<Order> orders = new ArrayList<>();
+            while (res.next()) {
+                Order order = new Order();
+                order.id = res.getInt(1);
+                order.userName = res.getString(2);
+                order.goodsName = res.getString(3);
+                order.totalPrice = res.getBigDecimal(4);
+                orders.add(order);
+            }
+            return orders;
+        }
+    }
 
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
      * @param databaseConnection 数据库链接
-     * @return 指定条件的列表
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -213,22 +227,10 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select a.ID, c.NAME, b.NAME, cast(GOODS_NUM * GOODS_PRICE as decimal)\n" +
+       return GetOrders(databaseConnection,"select a.ID, c.NAME, b.NAME, cast(GOODS_NUM * GOODS_PRICE as decimal)\n" +
                 "from \"ORDER\" a\n" +
                 "         join GOODS b on a.GOODS_ID = b.ID\n" +
-                "         join USER c on c.ID = a.USER_ID")) {
-            ResultSet res = statement.executeQuery();
-            List<Order> orders = new ArrayList<>();
-            while (res.next()) {
-                Order order = new Order();
-                order.id = res.getInt(1);
-                order.userName = res.getString(2);
-                order.goodsName = res.getString(3);
-                order.totalPrice = res.getBigDecimal(4);
-                orders.add(order);
-            }
-            return orders;
-        }
+                "         join USER c on c.ID = a.USER_ID");
     }
 
     /**
@@ -258,22 +260,10 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement("select a.ID, c.NAME, b.NAME, cast(GOODS_NUM * GOODS_PRICE as decimal)\n" +
+       return GetOrders(databaseConnection,"select a.ID, c.NAME, b.NAME, cast(GOODS_NUM * GOODS_PRICE as decimal)\n" +
                 "from \"ORDER\" a\n" +
                 "         left join GOODS b on a.GOODS_ID = b.ID\n" +
-                "         left join USER c on c.ID = a.USER_ID")) {
-            ResultSet res = statement.executeQuery();
-            List<Order> orders = new ArrayList<>();
-            while (res.next()) {
-                Order order = new Order();
-                order.id = res.getInt(1);
-                order.userName = res.getString(2);
-                order.goodsName = res.getString(3);
-                order.totalPrice = res.getBigDecimal(4);
-                orders.add(order);
-            }
-            return orders;
-        }
+                "         left join USER c on c.ID = a.USER_ID");
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
