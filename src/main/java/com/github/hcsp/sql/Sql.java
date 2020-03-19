@@ -86,7 +86,7 @@ public class Sql {
                      databaseConnection.prepareStatement(
                              "select count(distinct USER_ID) from `ORDER` where GOODS_ID=?")) {
             preparedStatement.setInt(1, goodsId);
-            final ResultSet resultSet = preparedStatement.executeQuery();
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 return resultSet.getInt(1);
             }
@@ -109,12 +109,12 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        try (final PreparedStatement statement =
+        try (PreparedStatement statement =
                      databaseConnection.prepareStatement(
                              "select ID,NAME,TEL,ADDRESS from USER  order by id desc limit ?,?")) {
             statement.setInt(1, (pageNum - 1) * pageSize);
             statement.setInt(2, pageSize);
-            final ResultSet resultSet = statement.executeQuery();
+            ResultSet resultSet = statement.executeQuery();
             List<User> users = new ArrayList<>();
             while (resultSet.next()) {
                 User user = new User();
@@ -157,7 +157,7 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        try (final PreparedStatement statement =
+        try (PreparedStatement statement =
                      databaseConnection.prepareStatement(
                              "select G2.ID,G2.NAME,convert(SUM(GOODS_NUM*GOODS_PRICE),bigint) as total   from \"ORDER\"\n" +
                                      "join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID\n" +
@@ -210,13 +210,13 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        try (final PreparedStatement statement =
+        try (PreparedStatement statement =
                      databaseConnection.prepareStatement(
                              "select \"ORDER\".ID,U.NAME,G2.NAME,convert(GOODS_NUM*GOODS_PRICE,bigint) from \"ORDER\"\n" +
                                      "join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID\n" +
                                      "join USER U on \"ORDER\".USER_ID = U.ID")) {
-            final ResultSet resultSet = statement.executeQuery();
-            final ArrayList<Order> orders = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery();
+            ArrayList<Order> orders = new ArrayList<>();
             while (resultSet.next()) {
                 final Order order = new Order();
                 order.id = resultSet.getInt(1);
@@ -254,13 +254,13 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        try (final PreparedStatement statement =
+        try (PreparedStatement statement =
                      databaseConnection.prepareStatement(
                              "select \"ORDER\".ID,U.NAME,G2.NAME,convert(GOODS_NUM*GOODS_PRICE,bigint) from \"ORDER\"\n" +
                                      "left join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID\n" +
                                      "left join USER U on \"ORDER\".USER_ID = U.ID")) {
-            final ResultSet resultSet = statement.executeQuery();
-            final ArrayList<Order> orders = new ArrayList<>();
+            ResultSet resultSet = statement.executeQuery();
+            ArrayList<Order> orders = new ArrayList<>();
             while (resultSet.next()) {
                 final Order order = new Order();
                 order.id = resultSet.getInt(1);
