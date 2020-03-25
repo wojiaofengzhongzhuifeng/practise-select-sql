@@ -1,5 +1,6 @@
 
 package com.github.hcsp.sql;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.*;
@@ -78,7 +79,8 @@ public class Sql {
      * 题目1：
      * 查询有多少用户曾经买过指定的商品
      *
-     * @param goodsId 指定的商品ID
+     * @param databaseConnection 数据库连接
+     * @param goodsId            指定的商品ID
      * @return 有多少用户买过这个商品
      */
 // 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
@@ -102,8 +104,9 @@ public class Sql {
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum 第几页，从1开始
-     * @param pageSize 每页有多少个元素
+     * @param databaseConnection 数据库连接
+     * @param pageNum            第几页，从1开始
+     * @param pageSize           每页有多少个元素
      * @return 指定页中的用户
      */
 // 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
@@ -156,6 +159,10 @@ public class Sql {
     /**
      * 题目3：
      * 查询所有的商品及其销售额，按照销售额从大到小排序
+     *
+     * @param databaseConnection 数据库连接
+     * @return 所有的商品及其销售额
+     * @throws SQLException 可能的异常
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -219,6 +226,10 @@ public class Sql {
     /**
      * 题目4：
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     *
+     * @param databaseConnection 数据库连接
+     * @return 订单信息 INNER JOIN的方式
+     * @throws SQLException 可能的异常
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -246,7 +257,7 @@ public class Sql {
                 "         JOIN USER ON O.USER_ID = USER.ID" +
                 "         JOIN GOODS ON O.GOODS_ID = GOODS.ID")) {
             ResultSet resultSet = statement.executeQuery();
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 Order order = new Order();
                 order.setId(resultSet.getInt(1));
                 order.setUserName(resultSet.getString(2));
@@ -261,6 +272,10 @@ public class Sql {
     /**
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     *
+     * @param databaseConnection 数据库连接
+     * @return 所有订单信息
+     * @throws SQLException 可能的异常
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -292,7 +307,7 @@ public class Sql {
                 "         LEFT JOIN USER ON O.USER_ID = USER.ID\n" +
                 "         LEFT JOIN GOODS ON O.GOODS_ID = GOODS.ID")) {
             ResultSet resultSet = statement.executeQuery();
-            while(resultSet.next()) {
+            while (resultSet.next()) {
                 Order order = new Order();
                 order.setId(resultSet.getInt("order_id"));
                 order.setUserName(resultSet.getString("user_name"));
