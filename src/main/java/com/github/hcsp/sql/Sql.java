@@ -249,21 +249,10 @@ public class Sql {
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orderL = new ArrayList<>();
-        try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT O.ID as order_id," +
-                "       USER.NAME  as user_name," +
-                "       GOODS.NAME as goods_name," +
-                "       O.GOODS_NUM * O.GOODS_PRICE as total_price\n" +
-                "FROM `ORDER` O" +
-                "         JOIN USER ON O.USER_ID = USER.ID" +
-                "         JOIN GOODS ON O.GOODS_ID = GOODS.ID")) {
+        try (PreparedStatement statement = databaseConnection.prepareStatement(buildGetOrdersSql("INNER"))) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                Order order = new Order();
-                order.setId(resultSet.getInt(1));
-                order.setUserName(resultSet.getString(2));
-                order.setGoodsName(resultSet.getString(3));
-                order.setTotalPrice(resultSet.getBigDecimal(4));
-                orderL.add(order);
+                orderL.add(buildOrder(resultSet));
             }
         }
         return orderL;
@@ -299,24 +288,33 @@ public class Sql {
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orderL = new ArrayList<>();
-        try (PreparedStatement statement = databaseConnection.prepareStatement("SELECT O.ID order_id,\n" +
+        try (PreparedStatement statement = databaseConnection.prepareStatement(buildGetOrdersSql("LEFT"))) {
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                orderL.add(buildOrder(resultSet));
+            }
+        }
+        return orderL;
+    }
+
+    private static String buildGetOrdersSql(String joinWay) {
+        joinWay = joinWay == null ? "" : joinWay;
+        return "SELECT O.ID order_id,\n" +
                 "       USER.NAME  as user_name,\n" +
                 "       GOODS.NAME as goods_name,\n" +
                 "       O.GOODS_NUM * O.GOODS_PRICE as total_price\n" +
                 "FROM `ORDER` O\n" +
-                "         LEFT JOIN USER ON O.USER_ID = USER.ID\n" +
-                "         LEFT JOIN GOODS ON O.GOODS_ID = GOODS.ID")) {
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Order order = new Order();
-                order.setId(resultSet.getInt("order_id"));
-                order.setUserName(resultSet.getString("user_name"));
-                order.setGoodsName(resultSet.getString("GOODS_NAME"));
-                order.setTotalPrice(resultSet.getBigDecimal("total_price"));
-                orderL.add(order);
-            }
-        }
-        return orderL;
+                joinWay + " JOIN USER ON O.USER_ID = USER.ID\n" +
+                joinWay + " JOIN GOODS ON O.GOODS_ID = GOODS.ID";
+    }
+
+    private static Order buildOrder(ResultSet resultSet) throws SQLException {
+        Order order = new Order();
+        order.setId(resultSet.getInt(1));
+        order.setUserName(resultSet.getString(2));
+        order.setGoodsName(resultSet.getString(3));
+        order.setTotalPrice(resultSet.getBigDecimal(4));
+        return order;
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
