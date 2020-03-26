@@ -218,24 +218,11 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        try (PreparedStatement statement = databaseConnection.prepareStatement(
-                "select \"ORDER\".ID, U.name as user_name, G2.name as goods_name, \"ORDER\".GOODS_PRICE * \"ORDER\".GOODS_NUM\n" +
-                        "from `ORDER`\n" +
-                        "        join USER U on \"ORDER\".USER_ID = U.ID\n" +
-                        "        join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID")) {
-
-            ResultSet set = statement.executeQuery();
-            List<Order> list = new ArrayList<>();
-            while (set.next()) {
-                Order order = new Order();
-                order.id = set.getInt(1);
-                order.userName = set.getString(2);
-                order.goodsName = set.getString(3);
-                order.totalPrice = set.getBigDecimal(4);
-                list.add(order);
-            }
-            return list;
-        }
+        String sql = "select \"ORDER\".ID, U.name as user_name, G2.name as goods_name, \"ORDER\".GOODS_PRICE * \"ORDER\".GOODS_NUM\n" +
+                "from `ORDER`\n" +
+                "        join USER U on \"ORDER\".USER_ID = U.ID\n" +
+                "        join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID";
+        return OrderJdbcConnection(databaseConnection, sql);
     }
 
     /**
@@ -266,22 +253,28 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        PreparedStatement statement = databaseConnection.prepareStatement(
-                "select \"ORDER\".ID, U.name as user_name, G2.name as goods_name, \"ORDER\".GOODS_PRICE * \"ORDER\".GOODS_NUM\n" +
-                        "from `ORDER`\n" +
-                        "         left join USER U on \"ORDER\".USER_ID = U.ID\n" +
-                        "         left join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID");
-        ResultSet set = statement.executeQuery();
+        String sql = "select \"ORDER\".ID, U.name as user_name, G2.name as goods_name, \"ORDER\".GOODS_PRICE * \"ORDER\".GOODS_NUM\n" +
+                "from `ORDER`\n" +
+                "         left join USER U on \"ORDER\".USER_ID = U.ID\n" +
+                "         left join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID";
+        return OrderJdbcConnection(databaseConnection, sql);
+    }
+
+    //order封装
+    private static List<Order> OrderJdbcConnection(Connection databaseConnection, String sql) throws SQLException {
         List<Order> list = new ArrayList<>();
-        while (set.next()) {
-            Order order = new Order();
-            order.id = set.getInt(1);
-            order.userName = set.getString(2);
-            order.goodsName = set.getString(3);
-            order.totalPrice = set.getBigDecimal(4);
-            list.add(order);
+        try (PreparedStatement statement = databaseConnection.prepareStatement(sql)) {
+            ResultSet set = statement.executeQuery();
+            while (set.next()) {
+                Order order = new Order();
+                order.id = set.getInt(1);
+                order.userName = set.getString(2);
+                order.goodsName = set.getString(3);
+                order.totalPrice = set.getBigDecimal(4);
+                list.add(order);
+            }
+            return list;
         }
-        return list;
     }
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
