@@ -188,6 +188,13 @@ public class Sql {
         String goodsName; // 商品名
         BigDecimal totalPrice; // 订单总金额
 
+        public Order(Integer id, String userName, String goodsName, BigDecimal totalPrice) {
+            this.id = id;
+            this.userName = userName;
+            this.goodsName = goodsName;
+            this.totalPrice = totalPrice;
+        }
+
         @Override
         public String toString() {
             return "Order{" + "id=" + id + ", userName='" + userName + '\'' + ", goodsName='" + goodsName + '\'' + ", totalPrice=" + totalPrice + '}';
@@ -266,16 +273,15 @@ public class Sql {
         try (PreparedStatement statement = databaseConnection.prepareStatement(sql)) {
             ResultSet set = statement.executeQuery();
             while (set.next()) {
-                Order order = new Order();
-                order.id = set.getInt(1);
-                order.userName = set.getString(2);
-                order.goodsName = set.getString(3);
-                order.totalPrice = set.getBigDecimal(4);
-                list.add(order);
+                list.add(new Order(set.getInt(1),
+                        set.getString(2),
+                        set.getString(3),
+                        set.getBigDecimal(4)));
             }
             return list;
         }
     }
+
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
     public static void main(String[] args) throws SQLException {
