@@ -229,7 +229,7 @@ public class Sql {
                 "from `ORDER`\n" +
                 "        join USER U on \"ORDER\".USER_ID = U.ID\n" +
                 "        join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID";
-        return OrderJdbcConnection(databaseConnection, sql);
+        return orderJdbcConnection(databaseConnection, sql);
     }
 
     /**
@@ -264,11 +264,11 @@ public class Sql {
                 "from `ORDER`\n" +
                 "         left join USER U on \"ORDER\".USER_ID = U.ID\n" +
                 "         left join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID";
-        return OrderJdbcConnection(databaseConnection, sql);
+        return orderJdbcConnection(databaseConnection, sql);
     }
 
     //order封装
-    private static List<Order> OrderJdbcConnection(Connection databaseConnection, String sql) throws SQLException {
+    private static List<Order> orderJdbcConnection(Connection databaseConnection, String sql) throws SQLException {
         List<Order> list = new ArrayList<>();
         try (PreparedStatement statement = databaseConnection.prepareStatement(sql)) {
             ResultSet set = statement.executeQuery();
