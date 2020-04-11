@@ -205,20 +205,10 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        List<Order> orderList = new ArrayList<>();
         String sql = "select `order`.id as order_id, user.name as user_name, goods.name as goods_name, goods_num*goods_price as total_price from `order` join user on user.id=`order`.user_id join goods on goods.id=`order`.goods_id;";
         try (PreparedStatement ps = databaseConnection.prepareStatement(sql)) {
-            ResultSet result = ps.executeQuery();
-            while (result.next()) {
-                Order order = new Order();
-                order.id = result.getInt("order_id");
-                order.userName = result.getString("user_name");
-                order.goodsName = result.getString("goods_name");
-                order.totalPrice = result.getBigDecimal("total_price");
-                orderList.add(order);
-            }
+            return getOrderListByQuery(ps);
         }
-        return orderList;
     }
 
     /**
@@ -246,18 +236,22 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        List<Order> orderList = new ArrayList<>();
         String sql = "select `order`.id as order_id, user.name as user_name, goods.name as goods_name, goods_num*goods_price as total_price from `order` left join user on user.id=`order`.user_id left join goods on goods.id=`order`.goods_id;";
         try (PreparedStatement ps = databaseConnection.prepareStatement(sql)) {
-            ResultSet result = ps.executeQuery();
-            while (result.next()) {
-                Order order = new Order();
-                order.id = result.getInt("order_id");
-                order.userName = result.getString("user_name");
-                order.goodsName = result.getString("goods_name");
-                order.totalPrice = result.getBigDecimal("total_price");
-                orderList.add(order);
-            }
+            return getOrderListByQuery(ps);
+        }
+    }
+
+    static List<Order> getOrderListByQuery(PreparedStatement ps) throws SQLException {
+        List<Order> orderList = new ArrayList<>();
+        ResultSet result = ps.executeQuery();
+        while (result.next()) {
+            Order order = new Order();
+            order.id = result.getInt("order_id");
+            order.userName = result.getString("user_name");
+            order.goodsName = result.getString("goods_name");
+            order.totalPrice = result.getBigDecimal("total_price");
+            orderList.add(order);
         }
         return orderList;
     }
