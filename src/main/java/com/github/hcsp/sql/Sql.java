@@ -80,7 +80,7 @@ public class Sql {
 // +-----+
 // | 2   |
 // +-----+
-    public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
+    static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
         String sql = "select count(distinct(user_id)) from `order` where goods_id=?;";
         try (PreparedStatement ps = databaseConnection.prepareStatement(sql)) {
             ps.setInt(1, goodsId);
@@ -107,9 +107,9 @@ public class Sql {
 // +----+----------+------+----------+
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
-    public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        List<User> userList = new ArrayList();
-        String sql = "select * from `user` order by id desc limit ?,?;";
+    static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
+        List<User> userList = new ArrayList<>();
+        String sql = "select * from `user` order by id desc limit ? offset ?;";
         try (PreparedStatement ps = databaseConnection.prepareStatement(sql)) {
             ps.setInt(1, pageNum);
             ps.setInt(2, pageSize);
@@ -155,13 +155,13 @@ public class Sql {
 //  +----+--------+------+
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
-    public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        List<GoodsAndGmv> goods = new ArrayList();
-        try (PreparedStatement ps = databaseConnection.prepareStatement("select id, name, (select sum(goods_num*goods_price) from `order` where `order`.goods_id=goods.id) as gmv from `goods` order by gmv desc;")) {
+    static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
+        List<GoodsAndGmv> goods = new ArrayList<>();
+        try (PreparedStatement ps = databaseConnection.prepareStatement("select goods_id,name,sum(goods_num*goods_price) as gmv from `order` join goods on goods.id=`order`.goods_id group by goods_id order by gmv desc")) {
             ResultSet result = ps.executeQuery();
             while (result.next()) {
                 GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
-                goodsAndGmv.goodsId = result.getInt("id");
+                goodsAndGmv.goodsId = result.getInt("goods_id");
                 goodsAndGmv.goodsName = result.getString("name");
                 goodsAndGmv.gmv = result.getBigDecimal("gmv");
                 goods.add(goodsAndGmv);
@@ -204,8 +204,8 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
-    public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        List<Order> orderList = new ArrayList();
+    static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
+        List<Order> orderList = new ArrayList<>();
         String sql = "select `order`.id as order_id, user.name as user_name, goods.name as goods_name, goods_num*goods_price as total_price from `order` join user on user.id=`order`.user_id join goods on goods.id=`order`.goods_id;";
         try (PreparedStatement ps = databaseConnection.prepareStatement(sql)) {
             ResultSet result = ps.executeQuery();
@@ -245,8 +245,8 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
-    public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        List<Order> orderList = new ArrayList();
+    static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
+        List<Order> orderList = new ArrayList<>();
         String sql = "select `order`.id as order_id, user.name as user_name, goods.name as goods_name, goods_num*goods_price as total_price from `order` left join user on user.id=`order`.user_id left join goods on goods.id=`order`.goods_id;";
         try (PreparedStatement ps = databaseConnection.prepareStatement(sql)) {
             ResultSet result = ps.executeQuery();
