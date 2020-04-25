@@ -111,12 +111,13 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
+        List<User> list = new ArrayList<>();
         try (PreparedStatement statement = databaseConnection.prepareStatement("select * from user order by id desc  limit ?  , ?")) {
             statement.setInt(1, (pageNum - 1) * pageSize); //(n-1)*size取第几页数据
             statement.setInt(2, pageSize);
 
             ResultSet result = statement.executeQuery();
-            List<User> list = new ArrayList<>();
+
 
             while (result.next()) {
                 User user = new User();
@@ -126,8 +127,9 @@ public class Sql {
                 user.address = result.getNString(4);
                 list.add(user);
             }
-            return list;
+
         }
+        return list;
     }
 
     // 商品及其营收
@@ -147,7 +149,7 @@ public class Sql {
      * 查询所有的商品及其销售额，按照销售额从大到小排序
      *
      * @param databaseConnection JDBC
-     *
+     * @return 指定页中的用户
      */
 // 预期的结果应该如图所示
 //  +----+--------+------+
@@ -171,7 +173,6 @@ public class Sql {
                 "GROUP BY ID   ORDER BY GMV DESC")) {
             ResultSet result = statement.executeQuery();
 
-
             while (result.next()) {
                 GoodsAndGmv gag = new GoodsAndGmv();
                 gag.goodsId = result.getInt(1);
@@ -179,8 +180,8 @@ public class Sql {
                 gag.gmv = result.getBigDecimal(3);
                 list.add(gag);
             }
-            return list;
         }
+        return list;
     }
 
 
@@ -202,6 +203,7 @@ public class Sql {
      * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
      *
      * @param databaseConnection JDBC
+     * @return 指定页中的用户
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
@@ -245,6 +247,7 @@ public class Sql {
      * 题目5：
      * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
      * @param databaseConnection JDBC
+     * @return 指定页中的用户
      */
 // 预期的结果为：
 // +----------+-----------+------------+-------------+
