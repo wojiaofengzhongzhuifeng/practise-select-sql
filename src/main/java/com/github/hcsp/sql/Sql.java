@@ -231,16 +231,8 @@ public class Sql {
                 "\tON \"ORDER\".USER_ID = USER.ID")) {
             ResultSet result = statement.executeQuery();
 
-            while (result.next()) {
-                Order order = new Order();
-                order.id = result.getInt(1);
-                order.userName = result.getNString(2);
-                order.goodsName = result.getNString(3);
-                order.totalPrice = result.getBigDecimal(4);
-                list.add(order);
-            }
+            return getResultOrder(result);
         }
-        return list;
     }
 
     /**
@@ -282,18 +274,24 @@ public class Sql {
                 "\tON \"ORDER\".USER_ID = USER.ID")) {
             ResultSet result = statement.executeQuery();
 
-            while (result.next()) {
-                Order order = new Order();
-                order.id = result.getInt(1);
-                order.userName = result.getNString(2);
-                order.goodsName = result.getNString(3);
-                order.totalPrice = result.getBigDecimal(4);
-                list.add(order);
-            }
+            return getResultOrder(result);
+        }
+    }
+    //将重复代码提取到一个方法里
+    public static List<Order> getResultOrder(ResultSet result) throws SQLException {
+        List<Order> list = new ArrayList<>();
+        while (result.next()) {
+            Order order = new Order();
+            order.id = result.getInt(1);
+            order.userName = result.getNString(2);
+            order.goodsName = result.getNString(3);
+            order.totalPrice = result.getBigDecimal(4);
+            list.add(order);
         }
         return list;
-
     }
+
+
 
     // 注意，运行这个方法之前，请先运行mvn initialize把测试数据灌入数据库
     public static void main(String[] args) throws SQLException {
