@@ -165,8 +165,8 @@ public class Sql {
                 + "group by `ORDER`.GOODS_ID \n"
                 + "order by total desc ");
 
-
         ResultSet resultSet = statement.executeQuery();
+
         List<GoodsAndGmv> list = new ArrayList<>();
         while (resultSet.next()) {
             GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
@@ -221,6 +221,7 @@ public class Sql {
                 + "group by `ORDER`.ID\n");
 
         ResultSet resultSet = statement.executeQuery();
+
         List<Order> list = new ArrayList<>();
         while (resultSet.next()) {
             Order order = new Order();
@@ -264,6 +265,7 @@ public class Sql {
                 + "           on \"ORDER\".GOODS_ID= GOODS.id\n"
                 + "         left join USER\n"
                 + "           on \"ORDER\".USER_ID = USER.ID\n")) {
+
             ResultSet resultSet = statement.executeQuery();
 
             List<Order> orders = new ArrayList<>();
