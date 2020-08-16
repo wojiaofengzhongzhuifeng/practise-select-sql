@@ -157,9 +157,12 @@ public class Sql {
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
         String sql = "select g.ID,g.NAME,sum(o.GOODS_NUM * o.GOODS_PRICE) sum from GOODS g, \"ORDER\" O\n"
-                + "where g.ID = O.GOODS_ID\n"
-                + "group by g.ID\n"
-                + "order by sum desc ;";
+                +
+                "where g.ID = O.GOODS_ID\n"
+                +
+                "group by g.ID\n"
+                +
+                "order by sum desc ;";
         List<GoodsAndGmv> list = new ArrayList<>();
         try (PreparedStatement statement = databaseConnection.prepareStatement(sql)) {
             ResultSet resultSet = statement.executeQuery();
@@ -209,9 +212,12 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        String sql = "select o.id, u.NAME, g.NAME, o.GOODS_NUM * o.GOODS_PRICE cout\n" +
-                "from \"ORDER\" o\n" +
-                "         inner join GOODS g on o.GOODS_ID = g.ID\n" +
+        String sql = "select o.id, u.NAME, g.NAME, o.GOODS_NUM * o.GOODS_PRICE cout\n"
+                +
+                "from \"ORDER\" o\n"
+                +
+                "         inner join GOODS g on o.GOODS_ID = g.ID\n"
+                +
                 "         inner join USER u on u.ID = o.USER_ID;";
         return getOrders(databaseConnection, sql);
     }
@@ -242,9 +248,12 @@ public class Sql {
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         String sql = "select o.id, u.NAME, g.NAME, o.GOODS_NUM * o.GOODS_PRICE cout\n"
-                + "from \"ORDER\" o\n"
-                + "         left join GOODS g on o.GOODS_ID = g.ID\n"
-                + "         left join USER u on u.ID = o.USER_ID;";
+                +
+                "from \"ORDER\" o\n"
+                +
+                "         left join GOODS g on o.GOODS_ID = g.ID\n"
+                +
+                "         left join USER u on u.ID = o.USER_ID;";
         return getOrders(databaseConnection, sql);
     }
 
