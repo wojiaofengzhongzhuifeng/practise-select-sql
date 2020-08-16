@@ -3,7 +3,11 @@ package com.github.hcsp.sql;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,10 +156,10 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
-        String sql = "select g.ID,g.NAME,sum(o.GOODS_NUM * o.GOODS_PRICE) sum from GOODS g, \"ORDER\" O\n" +
-                "where g.ID = O.GOODS_ID\n" +
-                "group by g.ID\n" +
-                "order by sum desc ;";
+        String sql = "select g.ID,g.NAME,sum(o.GOODS_NUM * o.GOODS_PRICE) sum from GOODS g, \"ORDER\" O\n"
+                + "where g.ID = O.GOODS_ID\n"
+                + "group by g.ID\n"
+                + "order by sum desc ;";
         List<GoodsAndGmv> list = new ArrayList<>();
         try (PreparedStatement statement = databaseConnection.prepareStatement(sql)) {
             ResultSet resultSet = statement.executeQuery();
@@ -237,10 +241,10 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
-        String sql = "select o.id, u.NAME, g.NAME, o.GOODS_NUM * o.GOODS_PRICE cout\n" +
-                "from \"ORDER\" o\n" +
-                "         left join GOODS g on o.GOODS_ID = g.ID\n" +
-                "         left join USER u on u.ID = o.USER_ID;";
+        String sql = "select o.id, u.NAME, g.NAME, o.GOODS_NUM * o.GOODS_PRICE cout\n"
+                + "from \"ORDER\" o\n"
+                + "         left join GOODS g on o.GOODS_ID = g.ID\n"
+                + "         left join USER u on u.ID = o.USER_ID;";
         return getOrders(databaseConnection, sql);
     }
 
