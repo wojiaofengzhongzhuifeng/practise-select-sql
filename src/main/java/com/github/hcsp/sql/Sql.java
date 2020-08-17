@@ -288,5 +288,4 @@ public class Sql {
             System.out.println(getLeftJoinOrders(connection));
         }
     }
-
 }
