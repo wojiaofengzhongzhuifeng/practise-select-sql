@@ -1,10 +1,10 @@
 
 package com.github.hcsp.sql;
+
 import java.io.File;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Sql {
@@ -81,7 +81,22 @@ public class Sql {
 // +-----+
 // | 2   |
 // +-----+
+
+    /**
+     *
+     * @param databaseConnection
+     * @param goodsId
+     * @return 有多少用户买过这个商品
+     * @throws SQLException
+     */
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
+        String sql = "select GOODS_ID, count(distinct USER_ID) from `ORDER` group by GOODS_ID having GOODS_ID = ?;";
+        PreparedStatement preStatement = databaseConnection.prepareStatement(sql);
+        preStatement.setInt(1, goodsId);
+        ResultSet resultSet = preStatement.executeQuery();
+        if (resultSet.next()) {
+            return resultSet.getInt(2);
+        }
         return 0;
     }
 
@@ -89,7 +104,7 @@ public class Sql {
      * 题目2：
      * 分页查询所有用户，按照ID倒序排列
      *
-     * @param pageNum 第几页，从1开始
+     * @param pageNum  第几页，从1开始
      * @param pageSize 每页有多少个元素
      * @return 指定页中的用户
      */
@@ -99,7 +114,33 @@ public class Sql {
 // +----+----------+------+----------+
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
+
+    /**
+     * 分页查询所有用户，按照ID倒序排列
+     * @param databaseConnection
+     * @param pageNum
+     * @param pageSize
+     * @return 返回一个User列表
+     * @throws SQLException
+     */
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
+        String sql = "select * from USER order by ID desc limit ? offset ?;";
+        PreparedStatement preStatement = databaseConnection.prepareStatement(sql);
+        preStatement.setInt(1, pageSize);
+        preStatement.setInt(2, pageSize * (pageNum - 1));
+        ResultSet resultSet = preStatement.executeQuery();
+        List<User> results = new ArrayList<>();
+        while (resultSet.next()) {
+            User result = new User();
+            result.id = resultSet.getInt(1);
+            result.name = resultSet.getString(2);
+            result.tel = resultSet.getString(3);
+            result.address = resultSet.getString(4);
+            results.add(result);
+        }
+        if (!results.isEmpty()) {
+            return results;
+        }
         return null;
     }
 
@@ -131,7 +172,33 @@ public class Sql {
 //  +----+--------+------+
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
+
+    /**
+     *
+     * @param databaseConnection
+     * @return 返回一个list，里面元素是GoodsAndGmv
+     * @throws SQLException
+     */
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
+        String sql = "select GOODS_ID as ID, GOODS.NAME as NAME, sum(GOODS_NUM * GOODS_PRICE) as GMV\n" +
+                "from GOODS\n" +
+                "         join `ORDER`\n" +
+                "where GOODS.ID = `ORDER`.GOODS_ID\n" +
+                "group by ID\n" +
+                "order by GMV desc;";
+        Statement statement = databaseConnection.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql);
+        List<GoodsAndGmv> results = new ArrayList<>();
+        while (resultSet.next()) {
+            GoodsAndGmv goodsAndGmv = new GoodsAndGmv();
+            goodsAndGmv.goodsId = resultSet.getInt(1);
+            goodsAndGmv.goodsName = resultSet.getString(2);
+            goodsAndGmv.gmv = resultSet.getBigDecimal(3);
+            results.add(goodsAndGmv);
+        }
+        if (!results.isEmpty()) {
+            return results;
+        }
         return null;
     }
 
@@ -169,8 +236,21 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
+
+    /**
+     * 使用inner join查询订单信息，只查询用户名、商品名齐全的订单
+     * @param databaseConnection
+     * @return 返回order元素的列表
+     * @throws SQLException
+     */
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
-        return null;
+        String sql = "select `ORDER`.ID, USER.NAME as USER_NAME, GOODS.NAME as GOODS_NAME, GOODS_NUM * GOODS_PRICE as TOTAL_PRICE\n" +
+                "from `ORDER`\n" +
+                "         inner join USER\n" +
+                "         inner join GOODS\n" +
+                "where `ORDER`.USER_ID = USER.ID\n" +
+                "  and `ORDER`.GOODS_ID = GOODS.ID;";
+        return getOrders(databaseConnection, sql);
     }
 
     /**
@@ -197,7 +277,43 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
+
+    /**
+     * 查询所有订单信息，哪怕它的用户名、商品名缺失，
+     * @param databaseConnection
+     * @return 返回order元素的列表
+     * @throws SQLException
+     */
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
+        String sql = "select `ORDER`.ID, USER.NAME as USER_NAME, GOODS.NAME as GOODS_NAME, GOODS_NUM * GOODS_PRICE as TOTAL_PRICE\n" +
+                "from `ORDER`\n" +
+                "         left join USER on \"ORDER\".USER_ID = USER.ID\n" +
+                "         left join GOODS on `ORDER`.GOODS_ID = GOODS.ID;";
+        return getOrders(databaseConnection, sql);
+    }
+
+    /**
+     * 将返回的Order结果填充到list中并返回
+     * @param databaseConnection
+     * @param sql
+     * @return
+     * @throws SQLException
+     */
+    private static List<Order> getOrders(Connection databaseConnection, String sql) throws SQLException {
+        Statement statement = databaseConnection.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql);
+        List<Order> results = new ArrayList<>();
+        while (resultSet.next()) {
+            Order order = new Order();
+            order.id = resultSet.getInt(1);
+            order.userName = resultSet.getString(2);
+            order.goodsName = resultSet.getString(3);
+            order.totalPrice = resultSet.getBigDecimal(4);
+            results.add(order);
+        }
+        if (!results.isEmpty()) {
+            return results;
+        }
         return null;
     }
 
