@@ -86,6 +86,13 @@ public class Sql {
 // | 2   |
 // +-----+
 
+    /**
+     *
+     * @param databaseConnection databaseConnection
+     * @param goodsId goodsId
+     * @return int
+     * @throws SQLException SQLException
+     */
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
         PreparedStatement statement = databaseConnection.prepareStatement("select count(distinct USER_ID) from \"ORDER\" where GOODS_ID = ?");
         statement.setInt(1, goodsId);
@@ -111,6 +118,14 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
 
+    /**
+     *
+     * @param databaseConnection databaseConnection
+     * @param pageNum pageNum
+     * @param pageSize pageSize
+     * @return List
+     * @throws SQLException SQLException
+     */
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
         PreparedStatement statement = databaseConnection.prepareStatement("select id, name, tel, address from  USER order by ID DESC limit ? offset ?");
         statement.setInt(1, pageSize);
@@ -158,6 +173,12 @@ public class Sql {
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
 
+    /**
+     *
+     * @param databaseConnection databaseConnection
+     * @return List
+     * @throws SQLException SQLException
+     */
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
         PreparedStatement statement = databaseConnection.prepareStatement("select GOODS_ID,G2.NAME,sum(GOODS_NUM*GOODS_PRICE) as GMV from \"ORDER\" join GOODS G2 on \"ORDER\".GOODS_ID = G2.ID\n" +
                 "where GOODS_ID in (select distinct GOODS_ID from \"ORDER\") group by GOODS_ID order by GMV desc ");
@@ -209,6 +230,12 @@ public class Sql {
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
 
+    /**
+     *
+     * @param databaseConnection databaseConnection
+     * @return List
+     * @throws  SQLException SQLException
+     */
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         PreparedStatement statement = databaseConnection.prepareStatement("select \"ORDER\".ID as ORDER_ID, U.NAME as USER_NAME, G2.NAME as GOODS_NAME, GOODS_NUM * GOODS_PRICE as TOTAL_PRICE\n" +
                 "from \"ORDER\" join GOODS G2 on G2.ID = \"ORDER\".GOODS_ID join USER U on U.ID = \"ORDER\".USER_ID");
@@ -250,6 +277,12 @@ public class Sql {
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
 
+    /**
+     *
+     * @param databaseConnection databaseConnection
+     * @return List
+     * @throws SQLException SQLException
+     */
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         PreparedStatement statement = databaseConnection.prepareStatement("select \"ORDER\".ID as ORDER_ID, U.NAME as USER_NAME, G2.NAME as GOODS_NAME, GOODS_NUM * GOODS_PRICE as TOTAL_PRICE\n" +
                 "from \"ORDER\" left join GOODS G2 on G2.ID = \"ORDER\".GOODS_ID left join USER U on U.ID = \"ORDER\".USER_ID\n");
