@@ -110,7 +110,10 @@ public class Sql {
         List<User> users = new ArrayList<>();
         PreparedStatement statement = null;
         try {
-            statement = databaseConnection.prepareStatement("SELECT * FROM USER LIMIT ?,?;");
+            statement = databaseConnection.prepareStatement("select id,name,tel,address \n" +
+                    "from user\n" +
+                    "order by user.id desc\n" +
+                    "limit ?,?;");
             statement.setInt(1, pageNum);
             statement.setInt(2, pageSize);
             ResultSet resultSet = statement.executeQuery();
