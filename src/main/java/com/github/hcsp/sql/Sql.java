@@ -68,19 +68,13 @@ public class Sql {
         }
     }
 
+
     /**
-     * 题目1：
-     * 查询有多少所有用户曾经买过指定的商品
-     *
-     * @param goodsId 指定的商品ID
+     * @param databaseConnection 数据库连接
+     * @param goodsId            指定的商品ID
      * @return 有多少用户买过这个商品
+     * @throws SQLException
      */
-// 例如，输入goodsId = 1，返回2，因为有2个用户曾经买过商品1。
-// +-----+
-// |count|
-// +-----+
-// | 2   |
-// +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
         // 创建一个预定义的statement
         PreparedStatement statement = null;
@@ -100,24 +94,18 @@ public class Sql {
             if (statement != null) {
                 statement.close();
             }
+
         }
         return -1;
     }
 
     /**
-     * 题目2：
-     * 分页查询所有用户，按照ID倒序排列
-     *
-     * @param pageNum  第几页，从1开始
-     * @param pageSize 每页有多少个元素
+     * @param databaseConnection
+     * @param pageNum            第几页，从1开始
+     * @param pageSize           每页有多少个元素
      * @return 指定页中的用户
+     * @throws SQLException
      */
-// 例如，pageNum = 2, pageSize = 3（每页3个元素，取第二页），则应该返回：
-// +----+----------+------+----------+
-// | ID | NAME     | TEL  | ADDRESS  |
-// +----+----------+------+----------+
-// | 1  | zhangsan | tel1 | beijing  |
-// +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
         List<User> users = new ArrayList<>();
         PreparedStatement statement = null;
@@ -156,21 +144,10 @@ public class Sql {
     }
 
     /**
-     * 题目3：
-     * 查询所有的商品及其销售额，按照销售额从大到小排序
+     * @param databaseConnection 数据库连接
+     * @return 查询所有的商品及其销售额，按照销售额从大到小排序
+     * @throws SQLException
      */
-// 预期的结果应该如图所示
-//  +----+--------+------+
-//  | ID | NAME   | GMV  |
-//  +----+--------+------+
-//  | 2  | goods2 | 2080 |
-//  +----+--------+------+
-//  | 1  | goods1 | 80   |
-//  +----+--------+------+
-//  | 4  | goods4 | 20   |
-//  +----+--------+------+
-//  | 3  | goods3 | 20   |
-//  +----+--------+------+
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
         List<GoodsAndGmv> goodsAndGmvs = new ArrayList<>();
         PreparedStatement statement = null;
@@ -210,25 +187,10 @@ public class Sql {
     }
 
     /**
-     * 题目4：
-     * 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     * @param databaseConnection 数据库连接
+     * @return 查询订单信息，只查询用户名、商品名齐全的订单，即INNER JOIN方式
+     * @throws SQLException
      */
-// 预期的结果为：
-// +----------+-----------+------------+-------------+
-// | ORDER_ID | USER_NAME | GOODS_NAME | TOTAL_PRICE |
-// +----------+-----------+------------+-------------+
-// | 1        | zhangsan  | goods1     | 50          |
-// +----------+-----------+------------+-------------+
-// | 2        | lisi      | goods1     | 10          |
-// +----------+-----------+------------+-------------+
-// | 3        | lisi      | goods1     | 20          |
-// +----------+-----------+------------+-------------+
-// | 4        | zhangsan  | goods2     | 80          |
-// +----------+-----------+------------+-------------+
-// | 5        | zhangsan  | goods2     | 2000        |
-// +----------+-----------+------------+-------------+
-// | 6        | zhangsan  | goods3     | 20          |
-// +----------+-----------+------------+-------------+
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orders = new ArrayList<>();
         PreparedStatement statement = null;
@@ -255,29 +217,10 @@ public class Sql {
     }
 
     /**
-     * 题目5：
-     * 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     * @param databaseConnection 数据库连接
+     * @return 查询所有订单信息，哪怕它的用户名、商品名缺失，即LEFT JOIN方式
+     * @throws SQLException
      */
-// 预期的结果为：
-// +----------+-----------+------------+-------------+
-// | ORDER_ID | USER_NAME | GOODS_NAME | TOTAL_PRICE |
-// +----------+-----------+------------+-------------+
-// | 1        | zhangsan  | goods1     | 50          |
-// +----------+-----------+------------+-------------+
-// | 2        | lisi      | goods1     | 10          |
-// +----------+-----------+------------+-------------+
-// | 3        | lisi      | goods1     | 20          |
-// +----------+-----------+------------+-------------+
-// | 4        | zhangsan  | goods2     | 80          |
-// +----------+-----------+------------+-------------+
-// | 5        | zhangsan  | goods2     | 2000        |
-// +----------+-----------+------------+-------------+
-// | 6        | zhangsan  | goods3     | 20          |
-// +----------+-----------+------------+-------------+
-// | 7        | NULL      | goods4     | 20          |
-// +----------+-----------+------------+-------------+
-// | 8        | NULL      | NULL       | 60          |
-// +----------+-----------+------------+-------------+
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         List<Order> orders = new ArrayList<>();
         PreparedStatement statement = null;
