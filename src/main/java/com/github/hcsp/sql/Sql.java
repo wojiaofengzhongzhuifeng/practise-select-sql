@@ -114,7 +114,7 @@ public class Sql {
                     "from user\n" +
                     "order by user.id desc\n" +
                     "limit ?,?;");
-            statement.setInt(1, pageNum);
+            statement.setInt(1, pageSize * (pageNum - 1));
             statement.setInt(2, pageSize);
             ResultSet resultSet = statement.executeQuery();
 
