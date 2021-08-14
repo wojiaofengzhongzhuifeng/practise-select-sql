@@ -85,6 +85,15 @@ public class Sql {
 // +-----+
 // | 2   |
 // +-----+
+
+    /**
+     * countUsersWhoHaveBoughtGoods
+     *
+     * @param databaseConnection Connection
+     * @param goodsId            goodsId
+     * @return int
+     * @throws SQLException SQLException
+     */
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select * from USER where ID in"
                 + "(select USER_ID from \"ORDER\" where GOODS_ID = ?)")) {
@@ -109,6 +118,16 @@ public class Sql {
 // +----+----------+------+----------+
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
+
+    /**
+     * getUsersByPageOrderedByIdDesc
+     *
+     * @param databaseConnection Connection
+     * @param pageNum            pageNum
+     * @param pageSize           pageSize
+     * @return List<User>
+     * @throws SQLException SQLException
+     */
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select * from USER order by ID DESC limit ?, ?;")) {
             preparedStatement.setInt(1, (pageNum - 1) * pageSize);
@@ -156,6 +175,14 @@ public class Sql {
 //  +----+--------+------+
 //  | 3  | goods3 | 20   |
 //  +----+--------+------+
+
+    /**
+     * getGoodsAndGmv
+     *
+     * @param databaseConnection Connection
+     * @return List<GoodsAndGmv>
+     * @throws SQLException SQLException
+     */
     public static List<GoodsAndGmv> getGoodsAndGmv(Connection databaseConnection) throws SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select ID, NAME, SUM(GOODS_PRICE * GOODS_NUM) as GMV from ( select GOODS.ID, \"ORDER\".GOODS_NUM, \"ORDER\".GOODS_PRICE, GOODS.NAME from \"ORDER\" join GOODS on GOODS.ID = \"ORDER\".GOODS_ID ) group by ID order by GMV DESC")) {
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -205,6 +232,14 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 6        | zhangsan  | goods3     | 20          |
 // +----------+-----------+------------+-------------+
+
+    /**
+     * getInnerJoinOrders
+     *
+     * @param databaseConnection Connection
+     * @return List<Order>
+     * @throws SQLException SQLException
+     */
     public static List<Order> getInnerJoinOrders(Connection databaseConnection) throws SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select \"ORDER\".ID ORDER_ID, USER.NAME USER_NAME, GOODS.NAME GOODS_NAME, \"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE as TOTAL_PRICE from \"ORDER\" join GOODS on GOODS.ID = \"ORDER\".GOODS_ID join USER on \"ORDER\".USER_ID = USER.ID;")) {
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -245,6 +280,14 @@ public class Sql {
 // +----------+-----------+------------+-------------+
 // | 8        | NULL      | NULL       | 60          |
 // +----------+-----------+------------+-------------+
+
+    /**
+     * getLeftJoinOrders
+     *
+     * @param databaseConnection Connection
+     * @return List<Order>
+     * @throws SQLException SQLException
+     */
     public static List<Order> getLeftJoinOrders(Connection databaseConnection) throws SQLException {
         try (PreparedStatement preparedStatement = databaseConnection.prepareStatement("select \"ORDER\".ID ORDER_ID, USER.NAME USER_NAME, GOODS.NAME GOODS_NAME, \"ORDER\".GOODS_NUM * \"ORDER\".GOODS_PRICE as TOTAL_PRICE from \"ORDER\" left join GOODS on GOODS.ID = \"ORDER\".GOODS_ID left join USER on \"ORDER\".USER_ID = USER.ID;")) {
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -267,10 +310,10 @@ public class Sql {
         String jdbcUrl = "jdbc:h2:file:" + new File(projectDir, "target/test").getAbsolutePath();
         try (Connection connection = DriverManager.getConnection(jdbcUrl, "root", "Jxi1Oxc92qSj")) {
             System.out.println(countUsersWhoHaveBoughtGoods(connection, 1));
-//            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
-//            System.out.println(getGoodsAndGmv(connection));
-//            System.out.println(getInnerJoinOrders(connection));
-//            System.out.println(getLeftJoinOrders(connection));
+            System.out.println(getUsersByPageOrderedByIdDesc(connection, 2, 3));
+            System.out.println(getGoodsAndGmv(connection));
+            System.out.println(getInnerJoinOrders(connection));
+            System.out.println(getLeftJoinOrders(connection));
         }
     }
 
