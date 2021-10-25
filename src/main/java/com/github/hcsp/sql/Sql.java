@@ -4,8 +4,14 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import javax.xml.transform.Result;
 
 public class Sql {
 // 用户表：
@@ -66,6 +72,13 @@ public class Sql {
         public String toString() {
             return "User{" + "id=" + id + ", name='" + name + '\'' + ", tel='" + tel + '\'' + ", address='" + address + '\'' + '}';
         }
+        User(int id, String name, String tel, String address){
+            this.address = address;
+            this.id = id;
+            this.name = name;
+            this.tel = tel;
+        }
+
     }
 
     /**
@@ -82,7 +95,14 @@ public class Sql {
 // | 2   |
 // +-----+
     public static int countUsersWhoHaveBoughtGoods(Connection databaseConnection, Integer goodsId) throws SQLException {
-        return 0;
+        PreparedStatement statement = databaseConnection.prepareStatement("select *  from `ORDER` where GOODS_ID=?");
+        statement.setInt(1, goodsId);
+        ResultSet result = statement.executeQuery();
+        Set<Number> useIdSet = new HashSet<Number>();
+        while (result.next()){
+            useIdSet.add(result.getInt(2));
+        }
+        return useIdSet.size();
     }
 
     /**
@@ -100,7 +120,22 @@ public class Sql {
 // | 1  | zhangsan | tel1 | beijing  |
 // +----+----------+------+----------+
     public static List<User> getUsersByPageOrderedByIdDesc(Connection databaseConnection, int pageNum, int pageSize) throws SQLException {
-        return null;
+        int offset = pageSize * (pageNum - 1);
+        int limit = pageNum;
+        PreparedStatement state = databaseConnection.prepareStatement("select * from USER order by ID desc LIMIT ? OFFSET ?");
+        state.setInt(1, limit);
+        state.setInt(2, offset);
+        List<User> userList = new ArrayList<User>();
+        ResultSet result = state.executeQuery();
+        while (result.next()){
+            int id = result.getInt(1);
+            String name = result.getString(2);
+            String tel = result.getString(3);
+            String address = result.getString(4);
+            User user = new User(id, name, tel, address);
+            userList.add(user);
+        }
+        return userList;
     }
 
     // 商品及其营收
